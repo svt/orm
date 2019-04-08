@@ -1,0 +1,17 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Rule for verifying ORM status
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/orm-status'
+    actions:
+      https_redirection: false
+      backend:
+        origin: 'http://127.0.0.1:1337'

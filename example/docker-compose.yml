@@ -1,0 +1,65 @@
+---
+version: '3.2'
+
+services:
+
+  varnish:
+    build:
+      context: ./varnish
+      dockerfile: Dockerfile
+    image: varnish
+    volumes:
+      - type: bind
+        source: ./config/varnish.vcl
+        target: /etc/varnish/default.vcl
+
+  haproxy:
+    image: haproxy:alpine
+    volumes:
+      - type: bind
+        source: ./config/haproxy.cfg
+        target: /usr/local/etc/haproxy/haproxy.cfg
+    ports:
+      - "8080:80"
+      - "9443:443"
+      - "8888:8080"
+
+  team-a-service:
+    image: nginx:latest
+    volumes:
+      - type: bind
+        source: ./nginx-content/nginx.conf
+        target: /etc/nginx/conf.d/default.conf
+      - type: bind
+        source: ./nginx-content/team-a-page.html
+        target: /usr/share/nginx/html/index.html
+
+  team-a-secret-service:
+    image: nginx:latest
+    volumes:
+      - type: bind
+        source: ./nginx-content/nginx.conf
+        target: /etc/nginx/conf.d/default.conf
+      - type: bind
+        source: ./nginx-content/team-a-secret-page.html
+        target: /usr/share/nginx/html/index.html
+
+  team-b-service:
+    image: nginx:latest
+    volumes:
+      - type: bind
+        source: ./nginx-content/nginx.conf
+        target: /etc/nginx/conf.d/default.conf
+      - type: bind
+        source: ./nginx-content/team-b-page.html
+        target: /usr/share/nginx/html/index.html
+
+  team-c-service:
+    image: nginx:latest
+    volumes:
+      - type: bind
+        source: ./nginx-content/nginx.conf
+        target: /etc/nginx/conf.d/default.conf
+      - type: bind
+        source: ./nginx-content/team-c-page.html
+        target: /usr/share/nginx/html/index.html

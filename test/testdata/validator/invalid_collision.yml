@@ -1,0 +1,28 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: The first rule
+    domains:
+      - example.com
+    matches:
+      all:
+        - paths:
+            regex:
+              - '/dat/.*/lizard/yo/.*'
+    actions:
+      backend:
+        origin: 'origin.example.com'
+
+  - description: The second rule
+    domains:
+      - example.com
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/dat/cool/lizard/yo'
+    actions:
+      backend:
+        origin: 'another-origin.example.com'

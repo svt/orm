@@ -1,0 +1,210 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Temporary redirect'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/redir/temporary'
+    actions:
+      redirect:
+        type: temporary
+        url: '/redir/hello'
+
+  - description: 'Permanent redirect'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/redir/permanent'
+    actions:
+      redirect:
+        type: permanent
+        url: 'http://example.com/redir/permanent_hello_yo'
+
+  - description: 'Temporary, allow method change'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/redir/temporary_allow_method_change'
+    actions:
+      redirect:
+        type: temporary_allow_method_change
+        url: 'http://example.com/redir/t/change_http_method_if_you_dare'
+
+  - description: 'Permanent, allow method change'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/redir/permanent_allow_method_change'
+    actions:
+      redirect:
+        type: permanent_allow_method_change
+        url: 'http://example.com/redir/p/change_http_method_if_you_dare'
+
+tests:
+  - name: 'Test temporary redirect'
+    request:
+      url: 'https://test/redir/temporary'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: '/redir/hello'
+
+  - name: 'Test permanent redirect'
+    request:
+      url: 'https://test/redir/permanent'
+    expect:
+      status: 308
+      headers:
+        - field: Location
+          regex: 'http://example.com/redir/permanent_hello_yo'
+
+  - name: 'Test temporary, allow method change'
+    request:
+      url: 'https://test/redir/temporary_allow_method_change'
+    expect:
+      status: 302
+      headers:
+        - field: Location
+          regex: 'http://example.com/redir/t/change_http_method_if_you_dare'
+
+  - name: 'Test permanent, allow method change'
+    request:
+      url: 'https://test/redir/permanent_allow_method_change'
+    expect:
+      status: 301
+      headers:
+        - field: Location
+          regex: 'http://example.com/redir/p/change_http_method_if_you_dare'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Dynamic redirect'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/redir/dynamic'
+    actions:
+      redirect:
+        type: temporary
+        scheme: https
+        domain: internet
+        path:
+          - replace:
+              from_regex: '/redir/([^/]*)(.*)'
+              to_regsub: '/redir/awesome\2'
+
+  - description: 'Dynamic redirect default scheme'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/redir/dynamic/scheme'
+    actions:
+      redirect:
+        type: temporary
+        domain: internet
+        path:
+          - replace:
+              from_regex: '/redir/([^/]*)(.*)'
+              to_regsub: '/redir/awesome\2'
+
+  - description: 'Dynamic redirect default domain'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/redir/dynamic/domain'
+    actions:
+      redirect:
+        type: temporary
+        scheme: https
+        path:
+          - replace:
+              from_regex: '/redir/([^/]*)(.*)'
+              to_regsub: '/redir/awesome\2'
+
+  - description: 'Dynamic redirect default path'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/redir/dynamic/path'
+    actions:
+      redirect:
+        type: temporary
+        scheme: https
+        domain: internet
+
+tests:
+  - name: 'Test dynamic redirect'
+    request:
+      url: 'https://test/redir/dynamic?q=a&y=0'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: 'https://internet/redir/awesome\?q=a&y=0'
+
+  - name: 'Test dynamic redirect default scheme https'
+    request:
+      url: 'https://test/redir/dynamic/scheme?q=a&y=0'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: 'https://internet/redir/awesome/scheme\?q=a&y=0'
+
+  - name: 'Test dynamic redirect default scheme http'
+    request:
+      url: 'http://test/redir/dynamic/scheme?q=a&y=0'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: 'http://internet/redir/awesome/scheme\?q=a&y=0'
+
+  - name: 'Test dynamic redirect default domain'
+    request:
+      url: 'http://test/redir/dynamic/domain?q=a&y=0'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: 'https://test/redir/awesome/domain\?q=a&y=0'
+
+  - name: 'Test dynamic redirect default path'
+    request:
+      url: 'http://test/redir/dynamic/path?q=a&y=0'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: 'https://internet/redir/dynamic/path\?q=a&y=0'

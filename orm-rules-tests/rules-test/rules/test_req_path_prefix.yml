@@ -1,0 +1,95 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Prefix path remove
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/req_path/prefix/remove/'
+    actions:
+      req_path:
+        - prefix:
+            remove: /req_path/prefix/remove
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: Test prefix path remove
+    request:
+      url: 'https://test/req_path/prefix/remove/yeah?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/yeah\?q=a&y=o'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Prefix path add
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/req_path/prefix/add'
+    actions:
+      req_path:
+        - prefix:
+            add: /best
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: Test prefix path add
+    request:
+      url: 'https://test/req_path/prefix/add/yeah?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/best/req_path/prefix/add/yeah\?q=a&y=o'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Prefix path remove and add
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/req_path/prefix/ra'
+    actions:
+      req_path:
+        - prefix:
+            remove: /req_path/prefix/ra/
+            add: /
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: Test prefix path remove and add (remove not triggered)
+    request:
+      url: 'https://test/req_path/prefix/ra?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=//req_path/prefix/ra\?q=a&y=o'
+
+  - name: Test prefix path remove and add
+    request:
+      url: 'https://test/req_path/prefix/ra/?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/\?q=a&y=o'

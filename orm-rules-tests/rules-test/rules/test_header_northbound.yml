@@ -1,0 +1,132 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test header_northbound set'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/header_northbound/set'
+    actions:
+      header_northbound:
+        - set:
+            field: BEST-HEADER
+            value: BEST-VALUE
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+  - description: 'Test header_northbound set overwrite'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/header_northbound/set/overwrite'
+    actions:
+      header_northbound:
+        - set:
+            field: BEST-HEADER
+            value: VALUE
+        - set:
+            field: BEST-HEADER
+            value: BEST-VALUE
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test header_northbound set'
+    request:
+      url: 'https://test/header_northbound/set'
+    expect:
+      status: 200
+      headers:
+        - field: BEST-HEADER
+          regex: 'BEST-VALUE'
+
+  - name: 'Test header_northbound set overwrite'
+    request:
+      url: 'https://test/header_northbound/set/overwrite'
+    expect:
+      status: 200
+      headers:
+        - field: BEST-HEADER
+          regex: 'BEST-VALUE'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test header_northbound add'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/header_northbound/add'
+    actions:
+      header_northbound:
+        - add:
+            field: HEADER
+            value: VALUE
+        - add:
+            field: HEADER
+            value: BETTER-VALUE
+        - add:
+            field: BEST-HEADER
+            value: BEST-VALUE
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test header_northbound add'
+    request:
+      url: 'https://test/header_northbound/add'
+    expect:
+      status: 200
+      headers:
+        - field: HEADER
+          regex: 'VALUE,BETTER-VALUE'
+        - field: BEST-HEADER
+          regex: 'BEST-VALUE'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test header_northbound remove'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/header_northbound/remove'
+    actions:
+      header_northbound:
+        - add:
+            field: HEADER
+            value: WRONG-VALUE
+        - remove: HEADER
+        - add:
+            field: HEADER
+            value: RIGHT-VALUE
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test header_northbound remove'
+    request:
+      url: 'https://test/header_northbound/remove'
+    expect:
+      status: 200
+      headers:
+        - field: HEADER
+          regex: 'RIGHT-VALUE'

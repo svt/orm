@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "schema_version": {"$ref": "common-1.json#/definitions/schema_version"},
+    "haproxy": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string",
+          "format": "hostname"
+        },
+        "user": {
+          "type": "string",
+          "format": "unix_user_or_group"
+        },
+        "group": {
+          "type": "string",
+          "format": "unix_user_or_group"
+        },
+        "control_user": {
+          "type": "string",
+          "format": "unix_user_or_group"
+        },
+        "control_group": {
+          "type": "string",
+          "format": "unix_user_or_group"
+        }
+      },
+      "additionalProperties": false
+    },
+    "varnish": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string",
+          "format": "hostname"
+        }
+      },
+      "additionalProperties": false
+    },
+    "crypto": {
+      "type": "object",
+      "properties": {
+        "certificates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "dns": {
+      "type": "object",
+      "properties": {
+        "nameservers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "hostname_with_port"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "custom_internal_healthcheck": {
+      "type": "object",
+      "properties": {
+        "http": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": ["GET"]
+            },
+            "path": {
+              "type": "string",
+              "format": "uri"
+            },
+            "domain": {
+              "type": "string",
+              "format": "hostname"
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "properties": {
+        "https_redirection": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "internal_networks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "network"
+      }
+    },
+    "global_actions": {
+      "type": "object",
+      "properties": {
+        "trailing_slash": {"$ref": "common-1.json#/definitions/trailing_slash"},
+        "https_redirection": {
+          "$ref": "common-1.json#/definitions/https_redirection"
+        },
+        "req_path": {"$ref": "common-1.json#/definitions/path_mod"},
+        "header_southbound": {"$ref": "common-1.json#/definitions/header_mod"},
+        "header_northbound": {"$ref": "common-1.json#/definitions/header_mod"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}

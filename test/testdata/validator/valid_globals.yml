@@ -1,0 +1,29 @@
+---
+
+schema_version: 1
+
+crypto:
+  certificates:
+    - '/super/exciting/path/to/a/stronk/certificate'
+    - '/another/stronk/certificate'
+
+dns:
+  nameservers:
+    - 'dns.example.com:53'
+    - 'another-dns.example.com'
+
+custom_internal_healthcheck:
+  http:
+    method: GET
+    domain: 'example.localdomain'
+    path: '/imba/path?is_imba=yes'
+
+defaults:
+  https_redirection: true
+
+global_actions:
+  https_redirection: false
+  header_southbound:
+    - set:
+        field: 'SUPER-HEADER'
+        value: 'IS-SUPER'

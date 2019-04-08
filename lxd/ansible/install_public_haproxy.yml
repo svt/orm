@@ -1,0 +1,11 @@
+- name: Install PPA deps
+  apt:
+    name: software-properties-common
+
+- name: Add HAProxy PPA
+  apt_repository:
+    repo: 'ppa:vbernat/haproxy-1.8'
+
+- name: Install HAProxy
+  apt:
+    name: "{{ haproxy_package_name }}={{ haproxy_package_version }}"

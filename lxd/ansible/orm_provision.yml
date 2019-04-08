@@ -1,0 +1,125 @@
+---
+
+- name: Provision ORM deployment image
+  hosts: orm
+  handlers:
+    - name: reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    - name: restart varnish
+      listen: reload systemd daemon
+      service:
+        name: varnish
+        state: restarted
+
+  tasks:
+    - name: Add private repo key
+      apt_key:
+        url: "{{ private_repo_key }}"
+        state: present
+      when: private_repo_key is defined
+
+    - name: Add private repo
+      apt_repository:
+        repo: "{{ private_repo }}"
+        state: present
+      when: private_repo is defined
+
+    - name: Install base package dependencies
+      apt:
+        name: "{{ item }}"
+      with_items:
+        - curl
+        - gnupg
+        - apt-transport-https
+        - wget
+        - man
+        - psmisc
+        - socat
+
+    # Install Varnish
+    - name: Add Varnish repository key
+      apt_key:
+        data: "{{ varnish_repository_key }}"
+        state: present
+
+    - name: Add Varnish repository
+      apt_repository:
+        repo: 'deb https://packagecloud.io/varnishcache/varnish5/ubuntu/ xenial main'
+
+    - name: Install Varnish
+      apt:
+        name: "{{varnish_package_name}}={{varnish_package_version}}"
+
+    # Configure Varnish
+    - name: Update Varnish unitfile
+      template:
+        src: varnish.service.j2
+        dest: /etc/systemd/system/varnish.service
+      notify: reload systemd daemon
+
+    - name: Create Varnish secret file
+      copy:
+        content: 'secret_key'
+        dest: /etc/varnish/secret
+      notify: restart varnish
+
+    # Install Varnish VMOD:s
+    - name: Build and install vmod_var from public source
+      include_tasks: install_public_vmod_var.yml
+      when: private_repo is not defined
+
+    - name: Install vmod_var from private repository
+      include_tasks: install_private_vmod_var.yml
+      when: private_repo is defined
+
+    # Install HAProxy
+    - name: Install HAProxy from public repository
+      include_tasks: install_public_haproxy.yml
+      when: private_repo is not defined
+
+    - name: Install HAProxy from private repository
+      include_tasks: install_private_haproxy.yml
+      when: private_repo is defined
+
+    # Configure HAProxy
+    - name: Create systemd haproxy.service.d folder
+      file:
+        path: /etc/systemd/system/haproxy.service.d
+        state: directory
+
+    - name: Overload HAProxy unit file with ORM-specifics
+      copy:
+        src: systemd_haproxy_orm.conf
+        dest: /etc/systemd/system/haproxy.service.d/orm.conf
+      notify: reload systemd daemon
+
+    - name: Enable HAProxy service
+      service:
+        name: haproxy
+        enabled: yes
+        state: started
+
+    - name: Create haproxyctl user
+      user:
+        name: haproxyctl
+        comment: "User to control haproxy"
+
+    - name: Enable ip_nonlocal_bind
+      sysctl:
+        name: net.ipv4.ip_nonlocal_bind
+        value: "1"
+        state: present
+
+    - name: Install snakeoil deps
+      apt:
+        name: ssl-cert
+
+    - name: Generate snakeoil cert
+      shell: make-ssl-cert generate-default-snakeoil
+      args:
+        creates: /etc/ssl/certs/ssl-cert-snakeoil.pem
+
+    - name: Create orm.pem
+      shell: cat /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/certs/ssl-cert-snakeoil.pem > /etc/ssl/orm.pem

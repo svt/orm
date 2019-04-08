@@ -1,0 +1,41 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test url handling'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/url'
+    actions:
+      backend:
+        origin: http://127.0.0.1:7357
+
+tests:
+  - name: 'Test url without query'
+    request:
+      url: 'https://test/url'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/url'
+
+  - name: 'Test url with query'
+    request:
+      url: 'https://test/url?q=a&derp'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/url\?q=a&derp'
+
+  - name: 'Test url with empty query'
+    request:
+      url: 'https://test/url?'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/url'

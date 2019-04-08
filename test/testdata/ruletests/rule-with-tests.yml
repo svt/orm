@@ -1,0 +1,28 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Dummy rule
+    domains:
+      - 'example.localdomain'
+    matches:
+      any:
+        - paths:
+            begins_with:
+              - '/dummy'
+    actions:
+      backend:
+        origin: dummy.example.com
+
+tests:
+  - name: Make sure that version.txt works
+    request:
+      url: "https://example.localdomain/.well-known/version.txt"
+    expect:
+      body:
+        - regex: '20([0-9]{2}-){2}'
+      status: 200
+      headers:
+        - field: Accept-Ranges
+          regex: bytes

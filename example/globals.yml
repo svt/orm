@@ -1,0 +1,23 @@
+---
+
+schema_version: 1
+
+haproxy:
+  address: haproxy
+
+varnish:
+  address: varnish
+
+dns:
+  nameservers:
+    - 127.0.0.11
+    - 1.1.1.1
+    - 1.0.0.1
+    - 8.8.8.8
+    - 8.8.4.4
+
+internal_networks:
+  - '127.0.0.1/8'
+  - '10.0.0.1/8'
+  - '172.16.0.1/12'
+  - '192.168.0.1/16'

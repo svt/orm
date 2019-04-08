@@ -1,0 +1,57 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test ignore_case'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            ignore_case: True
+            begins_with:
+              - '/ignore_case/'
+    actions:
+      synthetic_response: 'Catched by the ignore_case case just in case, in case you wondered.'
+
+tests:
+  - name: 'Test ignore_case'
+    request:
+      url: 'https://test/IGNore_cAsE/'
+    expect:
+      status: 200
+      body:
+        - regex: 'Catched by the ignore_case case just in case, in case you wondered\.'
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test ignore_case default off'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/do_NOT_ignore_case/'
+    actions:
+      synthetic_response: 'ignore_case_off'
+
+tests:
+  - name: 'Test ignore_case default off'
+    request:
+      url: 'https://test/do_NOT_ignore_case/'
+    expect:
+      status: 200
+      body:
+        - regex: 'ignore_case_off'
+
+  - name: 'Test ignore_case default off wrong'
+    request:
+      url: 'https://test/do_not_ignore_case/'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'

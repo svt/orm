@@ -1,0 +1,127 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Default HTTPS redir'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/globals/defaults/https_redir'
+    actions:
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test default HTTPS redir'
+    request:
+      url: 'http://test/globals/defaults/https_redir'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: 'https://test/globals/defaults/https_redir'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Global action https_redirection false'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/globals/actions/https_redir'
+    actions:
+      # The point of this test is to ensure that the
+      #   defaults: https_redirection: true (in globals.yml)
+      # does not override the one below:
+      https_redirection: False
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test global action https_redirection false'
+    request:
+      url: 'http://test/globals/actions/https_redir'
+    expect:
+      status: 200
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Global actions (req_path, headers)'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/globals/actions'
+    actions:
+      https_redirection: False
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test global actions (req_path, headers)'
+    request:
+      url: 'http://test/globals/actions'
+    expect:
+      status: 200
+      headers:
+        - field: 'GLOBALS-NORTHBOUND'
+          regex: 'NORTHBOUND'
+      body:
+        - regex: 'path=/global/globals/actions'
+        - regex: 'header=GLOBALS-SOUTHBOUND: SOUTHBOUND\r\n'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Global actions override-able'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/globals/actions/override'
+    actions:
+      https_redirection: False
+      req_path:
+        - prefix:
+            remove: /global
+      header_southbound:
+        - add:
+            field: 'GLOBALS-SOUTHBOUND'
+            value: 'LOCAL'
+      header_northbound:
+        - add:
+            field: 'GLOBALS-NORTHBOUND'
+            value: 'LOCAL'
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test global actions override-able'
+    request:
+      url: 'http://test/globals/actions/override'
+    expect:
+      status: 200
+      headers:
+        - field: 'GLOBALS-NORTHBOUND'
+          regex: 'NORTHBOUND,LOCAL'
+      body:
+        - regex: 'path=/globals/actions/override'
+        - regex: 'header=GLOBALS-SOUTHBOUND: SOUTHBOUND,LOCAL\r\n'

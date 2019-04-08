@@ -1,0 +1,141 @@
+---
+
+stages:
+  - verify
+  - deployment-test
+  - package
+  - distribute
+
+lint:
+  image: python:3.6
+  script:
+    - pip install virtualenv
+    - make lint
+  stage: verify
+  tags:
+    - docker
+
+test:
+  image: python:3.6
+  script:
+    - pip install virtualenv
+    - make test
+  stage: verify
+  tags:
+    - docker
+
+build_deployment_image:
+  script:
+    - sudo apt-get update -qq && sudo apt-get install -qq python3 virtualenv
+    - make build-orm-deployment
+  artifacts:
+    paths:
+      - 'lxd/dist/orm-image.tar.gz'
+    expire_in: 1 hour
+  stage: verify
+  tags:
+    - ubuntu1604
+
+deployment_test:
+  script:
+    - sudo apt-get update -qq && sudo apt-get install -qq python3 virtualenv
+    - make deployment-test
+  stage: deployment-test
+  tags:
+    - ubuntu1604
+
+.package_template: &package_template
+  image: python:3.6
+  script:
+    - pip install virtualenv
+    - make dist
+  artifacts:
+    paths:
+      - 'dist/*'
+    expire_in: 1 hour
+  stage: package
+  tags:
+    - docker
+
+package:
+  <<: *package_template
+  only:
+    - /^\d+\.\d+\.\d+$/   # Example tag: 1.2.3
+
+package_manual:
+  <<: *package_template
+  except:
+    - /^\d+\.\d+\.\d+$/   # Example tag: 1.2.3
+  when: manual
+
+.distribute_template: &distribute_template
+  stage: distribute
+  tags:
+    - docker
+  image:
+    name: minio/mc
+    entrypoint: ["/bin/sh", "-c"]
+  script:
+    - >
+      mc config host add minio_host ${minio_url}
+      ${minio_access_key} ${minio_secret_key} S3v4
+    - mc cp dist/*.tar.gz minio_host/orm/
+
+distribute:
+  <<: *distribute_template
+  only:
+    - /^\d+\.\d+\.\d+$/   # Example tag: 1.2.3
+
+distribute_manual:
+  <<: *distribute_template
+  except:
+      - /^\d+\.\d+\.\d+$/   # Example tag: 1.2.3
+  when: manual
+
+.dockerize_template: &dockerize_template
+  tags:
+    - ubuntu1604
+  stage: distribute
+  script:
+    - make push-docker
+
+dockerize:
+  <<: *dockerize_template
+  only:
+     - /^\d+\.\d+\.\d+$/   # Example tag: 1.2.3
+
+dockerize_manual:
+  <<: *dockerize_template
+  except:
+     - /^\d+\.\d+\.\d+$/   # Example tag: 1.2.3
+  when: manual
+
+.push_deployment_image_template: &push_deployment_image_template
+  stage: distribute
+  tags:
+    - docker
+  image:
+    name: minio/mc
+    entrypoint: ["/bin/sh", "-c"]
+
+push_deployment_image:
+  <<: *push_deployment_image_template
+  script:
+    - >
+      mc config host add minio_host ${minio_url}
+      ${minio_access_key} ${minio_secret_key} S3v4
+    - mc cp lxd/dist/orm-image.tar.gz minio_host/orm/deployment-images/orm-image.tar.gz
+    - mc cp lxd/dist/orm-image.tar.gz minio_host/orm/deployment-images/orm-image-${CI_COMMIT_SHA}.tar.gz
+  only:
+    - /^\d+\.\d+\.\d+$/   # Example tag: 1.2.3
+
+push_deployment_image_manual:
+  <<: *push_deployment_image_template
+  script:
+    - >
+      mc config host add minio_host ${minio_url}
+      ${minio_access_key} ${minio_secret_key} S3v4
+    - mc cp lxd/dist/orm-image.tar.gz minio_host/orm/deployment-images/orm-image-manual-${CI_COMMIT_SHA}.tar.gz
+  except:
+     - /^\d+\.\d+\.\d+$/   # Example tag: 1.2.3
+  when: manual

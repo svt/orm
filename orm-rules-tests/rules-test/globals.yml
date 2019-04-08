@@ -1,0 +1,7 @@
+---
+
+schema_version: 1
+
+crypto:
+  certificates:
+    - /etc/ssl/orm.pem

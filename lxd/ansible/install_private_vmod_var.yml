@@ -1,0 +1,5 @@
+- name: Install varnish modules
+  apt:
+    name: "varnish-vmod-variable={{ varnish_vmod_variable_version }}"
+    state: present
+  notify: restart varnish

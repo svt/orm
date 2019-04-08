@@ -1,0 +1,8 @@
+/env
+/dist
+/out
+*.pyc
+*.egg-info
+
+# ORM collision check cache
+cache.pkl

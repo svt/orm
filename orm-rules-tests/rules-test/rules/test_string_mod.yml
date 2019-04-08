@@ -1,0 +1,34 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test multiple string mod actions'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/string_mod/'
+    actions:
+      req_path:
+        - prefix:
+            remove: /string_mod
+            add: /mega_string_mod
+        - replace:
+            from_regex: '/mega_(.*)_mod/(.*)'
+            to_regsub: '/advanced_\1_magic/\2'
+        - prefix:
+            add: /super
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test multiple string mod actions'
+    request:
+      url: 'https://test/string_mod/yo?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/super/advanced_string_magic/yo\?q=a&y=o'

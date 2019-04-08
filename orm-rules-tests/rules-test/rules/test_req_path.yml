@@ -1,0 +1,165 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test req_path replace from_exact to string'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/req_path/from_exact/to/string'
+    actions:
+      req_path:
+        - replace:
+            from_exact: '/req_path/from_exact/to/string'
+            to: '/req_path/from_exact/to/yeah'
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test req_path replace from_exact to string'
+    request:
+      url: 'https://test/req_path/from_exact/to/string'
+    expect:
+      status: 200
+      body:
+        - regex: 'parsed_path=/req_path/from_exact/to/yeah'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test req_path replace from_regex to string'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/req_path/from_regex/to/string'
+    actions:
+      req_path:
+        - replace:
+            from_regex: '.*from_\w+/[to]{1,2}/.*'
+            to: '/req_path/to_string/from/regex'
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test req_path replace from_regex to string'
+    request:
+      url: 'https://test/req_path/from_regex/to/string'
+    expect:
+      status: 200
+      body:
+        - regex: 'parsed_path=/req_path/to_string/from/regex'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test req_path replace from_regex to_regsub'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/req_path/from_regex/to_regsub'
+    actions:
+      req_path:
+        - replace:
+            from_regex: '(.*)(reg)ex(.*)'
+            to_regsub: '\1\2\3'
+        - replace:
+            from_regex: '(.*)(reg)(.*)(reg)(.*)'
+            to_regsub: '\1\2ular_expression\3\4ular_expression\5'
+        - replace:
+            from_regex: '(.*)(sub)(.*)'
+            to_regsub: '\1_\2stitution\3'
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test req_path replace from_regex to_regsub'
+    request:
+      url: 'https://test/req_path/from_regex/to_regsub'
+    expect:
+      status: 200
+      body:
+        - regex: 'parsed_path=/req_path/from_regular_expression/to_regular_expression_substitution'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test req_path replace ignore_case true'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/req_path/ignore_case/true'
+    actions:
+      req_path:
+        - replace:
+            ignore_case: True
+            from_exact: '/req_path/ignore_case/true/false_yo_very_false_yo'
+            to: '/req_path/ignore_case/true/true_very_true_yo'
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test req_path replace ignore_case true'
+    request:
+      url: 'https://test/req_path/ignore_case/true/faLsE_Yo_VERY_false_yo'
+    expect:
+      status: 200
+      body:
+        - regex: 'parsed_path=/req_path/ignore_case/true/true_very_true_yo'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test req_path replace ignore_case false'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/req_path/ignore_case/false'
+    actions:
+      req_path:
+        - replace:
+            # ignore_case: False is default
+            from_exact: '/req_path/ignore_case/false/FALSE'
+            to: '/req_path/ignore_case/false/TRUE'
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test req_path replace ignore_case false'
+    request:
+      url: 'https://test/req_path/ignore_case/false/FALSE'
+    expect:
+      status: 200
+      body:
+        - regex: 'parsed_path=/req_path/ignore_case/false/TRUE'
+
+  - name: 'Test req_path replace ignore_case false wrong'
+    request:
+      url: 'https://test/req_path/ignore_case/false/false'
+    expect:
+      status: 200
+      body:
+        - regex: 'parsed_path=/req_path/ignore_case/false/false'

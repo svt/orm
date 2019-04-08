@@ -1,0 +1,6 @@
+include LICENSE.txt
+recursive-include orm/config *
+recursive-include orm/schemas *
+recursive-include orm/templates *
+prune orm.egg-info
+prune test

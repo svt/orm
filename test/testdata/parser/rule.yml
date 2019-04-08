@@ -1,0 +1,23 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Sport RSS
+    domains:
+      - www.example.com
+    matches:
+      - any:
+          - paths:
+              equals:
+                - '/sport/feed.xml'
+              regex:
+                - '/sport/.*/feed.xml'
+    actions:
+      backends:
+        origin: some-origin.example.com
+      req_path:
+        - replace:
+            how: first_occurrence
+            from_exact: '/sport/'
+            to: '/v1/rss/'

@@ -1,0 +1,19 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Team C service backend
+    # Match requests that goes to the domain subdomain.orm.localdomain
+    domains:
+      - subdomain.orm.localdomain
+    matches:
+      all:
+        # The path must begin with '/team-c/'
+        - paths:
+            begins_with:
+              - '/team-c/'
+    actions:
+      # Send traffic that matches the above rules to team-c:s service team-c-service.
+      backend:
+        origin: 'http://team-c-service'

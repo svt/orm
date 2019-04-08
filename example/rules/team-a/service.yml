@@ -1,0 +1,38 @@
+---
+
+schema_version: 1
+
+# This file contains two ORM rules
+rules:
+  - description: Team A service backend
+    # Match requests that goes to the domain orm.localdomain
+    domains:
+      - orm.localdomain
+    matches:
+      all:
+        # The path can be anything
+        - paths:
+            regex:
+              - '.*'
+        # except one that begins with '/secret/' (It is used in secret-service.yml)
+        - paths:
+            not: True
+            begins_with:
+              - '/secret/'
+    actions:
+      backend:
+        # Send traffic that matches the above rules to team-a:s service team-a-service.
+        origin: 'http://team-a-service'
+
+  - description: Team A redirect from orm-legacy to orm
+    # Match requests that goes to the domain orm-legacy.localdomain
+    domains:
+      - orm-legacy.localdomain
+    # All requests that do not match any other rule will match this rule.
+    domain_default: True
+    actions:
+      # Redirect requests that matches the above rules to the domain orm.localdomain.
+      # (path, HTTP method, etc. will be preserved)
+      redirect:
+        type: temporary
+        domain: orm.localdomain

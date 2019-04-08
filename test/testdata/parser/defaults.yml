@@ -1,0 +1,26 @@
+---
+
+rules:
+  - description: foo
+    domains:
+      - example.com
+    actions:
+      https_redirection: True
+
+  - description: bar
+    domains:
+      - example.com
+    actions:
+      https_redirection: False
+
+  - description: lizard
+    domains:
+      - example.com
+
+  - description: snek
+    domains:
+      - example.com
+    actions:
+      redirect:
+        type: temporary
+        url: internet

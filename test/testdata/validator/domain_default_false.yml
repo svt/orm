@@ -1,0 +1,11 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Domain default false
+    domains:
+      - yeah.yo
+    domain_default: False
+    actions:
+      synthetic_response: 'Does not compute'

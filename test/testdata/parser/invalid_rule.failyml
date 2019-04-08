@@ -1,0 +1,24 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Sport RSS
+    this_key: "is not valid"
+    domains:
+      - www.example.com
+    matches:
+      any:
+        - path:
+            equals:
+              - '/sport/feed.xml'
+            regex:
+              - '/sport/.*/feed.xml'
+    actions:
+      backends:
+        origin: some-origin.example.com
+      req_path:
+        - replace:
+            how: first_occurrence
+            from_exact: '/sport/'
+            to: '/v1/rss/'

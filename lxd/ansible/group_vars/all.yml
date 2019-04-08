@@ -1,0 +1,87 @@
+---
+
+### Use the following attributes if using a private_repo
+# private_repo: "deb http://example.com/repo xenial main"
+# private_repo_key: "http://example.com/url/to/repo.key"
+# haproxy_package_name: haproxy
+# haproxy_package_version: 1.8.3-1
+# varnish_package_name: varnish
+# varnish_package_version: "5.2.1-1~{{ ansible_distribution_release }}"
+# varnish_vmod_variable_version: 1.2-2
+
+### Use the following attributes if not using a private_repo
+haproxy_package_name: haproxy
+haproxy_package_version: 1.8.*
+varnish_package_name: varnish
+varnish_package_version: 5.2.1-1~xenial
+
+build_path: /root
+vmod_variable: "vmod-variable-1.2"
+vmod_variable_build_path: "{{ build_path }}/{{vmod_variable}}"
+
+varnish_repository_key: |
+  -----BEGIN PGP PUBLIC KEY BLOCK-----
+  Version: GnuPG v1.4.11 (GNU/Linux)
+
+  mQINBFhRSdkBEACsK/7o01zqCRROp6MZf3SVcENww+IQT2Szna6eEfkZTaMRXCHj
+  OqHxf0+ofK57JDzMTKaZgkUpTZ+gQuSWPqKVT7JpfZ6uMx342kSLUpwVpwB3JxTb
+  nXxPnUMPrhsjSNskaiLzHlSjcmS94aZ8mAPrUoe3PhONPlCN9z62rGY4oWcNXi6M
+  7hZW5wZplItH30MDmbi6MjdZpT2m4r9klJN/l8BkvwZz3c2TecG5HZ3h01+/VPyl
+  QWyrRVH/DCJnJdBca9aWeRjQNmqfVXk4hpDa+VXiUlCYj7BgC0cKdvbH2xHnCyzt
+  4k/TmZLVAwte/7zcisKLqDzC4uZPKvo3rGkpgEX3BijG7HloCQ7Qpa6ly4yG9CQ0
+  HRAgmbM0YSORxsHVLx18OEylWEtkt5Av36jKy+faXK9dFaB2z0MheVpcLD538V90
+  XK1rlHxHbdL/FaK8Y4eOFrB2caw5+WwFeOupM1aXp5PbHddNkSttChH5ayEyy6PY
+  /5kGxwgpDiIBWzXZmbHqZ/pg6HR6ZNGFLmjxGoXYSwJpr+EJ/a73lNKAN1M5WPLk
+  tvTHBXAlDyX7a3VlmfIHSRBqGp+SfTHGD+3uMLVXS1UvzqMEt1xP02Dhd5+QXyQ+
+  wWLVbiOzQOIWBvJ81VJldSzNYonZgkh8rmMQ82vgn0PqH93TO2XG1MkPLwARAQAB
+  tHNodHRwczovL3BhY2thZ2VjbG91ZC5pby92YXJuaXNoY2FjaGUvdmFybmlzaDUw
+  IChodHRwczovL3BhY2thZ2VjbG91ZC5pby9kb2NzI2dwZ19zaWduaW5nKSA8c3Vw
+  cG9ydEBwYWNrYWdlY2xvdWQuaW8+iQI4BBMBAgAiBQJYUUnZAhsvBgsJCAcDAgYV
+  CAIJCgsEFgIDAQIeAQIXgAAKCRCB+Mouwj9VxcePD/wP0zK+X9tbZC8QeY9HGSXF
+  ahRPYFJPiWiiFClHR+0/7uRxhYrztniBCwNnkYCM5XuZDAYxo8S/v/MirSO/NHes
+  s6w80ar0HSXXRL5HFcRcZbbX6048RiIdxricvCyCkov7Vm/98asD82gTyN3SFYS5
+  XRp7QAf7yd/G/UMPj4EL2Rqg1SQMDDfzrzzz8HsDg1s8d8E7BksiDUI2vFGeF1xU
+  yZn/FQ0Bqmji7zLtx/NyjNNHAlCKByXyMpOanm86kUGV7RZO7pDms710dbZBbs49
+  phyzm4SGaohMNPKbAV9YtL2pANK2WEozqExvPLyg5HQLmsesuZEk72i2O+4TVPzP
+  2AscM/qIqFiETmRloJjPFX+wL15LKuP634QJDq6zAt98IFwbGPlyQvadkCRr1oI2
+  SiBK/hvdZrzrV7JpzF82HF0FpZbNnQTS9avKcK3EVZaoYMPzAf+scbb9RwGtLSUk
+  IVuhZvQVC/5abgwL7hmv/MXpNQK5aliL3Z0JdO24cOVrIJ0zk2GVv8id2YokjPaW
+  W2nKkp9mLEUeTgvJnSc32DKdJ2xhbC2qlS18OVWaSCoAgG7lN8kJ1ZwOf22CRlXB
+  SMlT/MfPF10goCnNssBv2uYndhznYehpSmNn+icowalkoTBLl7IScPwLjz6C8GDZ
+  uGAJhbKc+bvJdbV+f8u3F7kCDQRYUUnZARAAtwNPMZRocksOMN4hgaVJFBRiHeee
+  yqtjC1dS8yL+MqqgmbLXlahbPbLyXxYeDn8y9LNPEbzV3C+nci40Pvbnmr8GpNXv
+  tocvn8LcPK6xuBufgqEnBL9J1UZWcKpl21q5el5vZf6SxnwaMRYKi/g+OvaZP/X4
+  D5HO+tyhEjTQKyYOZne7c3rPdLfnOLQbz+C4oLBl2ZQ/pZT29IBMn9PIbq3lbEXk
+  bt8V8ols6LbKbmQB16magpBgfNPj7Imy9IzqVXI8bT7tIgL2qmjYIaG/eNx6I5Ed
+  TA1FS7yjbCF4komh3aDAT46BCQHcoM+DDzSTMT6I8YfzdoJvTUVzo2yZrzvanopq
+  IUNibwJrNget3mJ+P405CrX+WsW+/u/YDGF6tu65xqfM0DdKTZgpY4Bs9hP0qoKn
+  kN0l0xtigZE9bqr1naHBTmiqCUxokMKCXK3yvEbfseWek4zWS7nDHL9JqQZSyRUY
+  1WoRb6PcNXtaIRdIY6htfsd8pMAsXe1rnvQpAr7/+iQwYv9FTfFrqj6wxYJsykf/
+  7mI2+BVo7BIJpcHsiR3lVbnsIuz6wBx7laPoRQP9K0W0bClinrMavG7lIgztMsDX
+  ym37IML4OJCrv64Tth3yU2PcYvyH9Z1ouRGmnsTxxa8MZtdRmcxbjEbtj6rIXLJl
+  RhIPBYIBD42ZYyEAEQEAAYkEPgQYAQIACQUCWFFJ2QIbLgIpCRCB+Mouwj9VxcFd
+  IAQZAQIABgUCWFFJ2QAKCRBAsnIbfd5gp+BSD/4uJ4hcqXLpmD4L3hn08urbsPZX
+  ItES3oKAuuVipNtufWra8h5vRjt7Lo5F4rl714HKKECiTu7U5ErrbGver+Rqu/du
+  x9dVPngFO4WL2pK9PMcn7rO0j6L/NCk4Amj28qmx//lCK75YjfoIMIZlL4ZxiP3D
+  pfoD/6SOssz6xCXxuzciYGhvdokgtUW1nAQqtlc2MaHC4rxy5z5MXdJGwhT4XK61
+  fLQTPyk1d0eSjZjgO2Fr6qd9Eq3RUC/ZOx2v62U+dVlURAORPZTBkmywqLTL6Ah1
+  Ti3syS0z+WlbutkrShMLV947Wf5bsKUkdbYsNeVGP70XO46GpFcp00+qk9cIc54n
+  +xcjwC0faIxE+35cthoSnqw/Fx+/Y6cR1B+uANr97JmGVCScaxAGL5HMdpj6CWzX
+  wNgtgxTPNeTcBrEMITkOmT5LhiQNj4ID9xiikUjwRfGurwwzyp2iFZRexOp8YEie
+  oDGT9HQRHS9OREQAYhFRkZ1jToQP/SFKClZFfayEeONQR5FKRkItbas3e/5lMHOR
+  YGNV1JQzbL9oLMspomlpqQH0rOBMWbbX1v7UCQmw9ocWBMY1nxDhxmUS+dXW5q31
+  HwHOU6ruHOG2eA3CZKN2OJZx1Mn7mTGQT7jPuxMbNplJy6qlHMJm5XyNpW2aX9j/
+  K8glBtPqjtYqadnv9K3VEAClSI4FWwvRPnl50o5maVCOVM+K3nviOBegukQTyU/j
+  GtvCGjfP+D0FA2n8zmd8M+7oGKxK8XM8eTAABftRZTMnUoDRXPWPxXKnuuP/Gv5B
+  wDM5gwq0Jj4KrsOvbxJ03nYBH02MZynjy3M24gXVMDS+ESWOq2mCGHqQuEQP4SQ+
+  /U5Mfhv6El4Pv1xpHZD3tp9q29UIdbEhWRf1bhN0hYKWLW2AuJvNIGH83dx6vLSx
+  cFgXvXu339vcL+Narlwq+w9dKr3T0P3HXtzsl2BI9t65ecdgZR+7i20wH3bV/wiw
+  1h/IBDiy3KyYEYQrt73YMXfJkt52db9t2uudE5+HEbKj/NUSZAaZbZKYp9/wHp2n
+  /qbqoSdRuPUlOTttnl6RAPnLSFjZuB2qU2vDtqlh2YAqjq0XlkmDsvIx3J3TVpUR
+  Vu9sbiagCEr0tQoqO5NSszLuZbgRnwDtVL1GUQKkTzrktcF4HvDTaTYorDKDtISv
+  HC8vD1ly/qdXp7C+pNnbzoWzDUjHrfAIL9tu1jM/iSHpl4X67p1Qj/58scBFQcur
+  iOaLbwOMJYotKA+RScCSlkMMNtLmfbG0V26BEltyjeLCqaGboi/oJjthfCMsXVqG
+  PLQaknLmTzjwpOtNrlv6o495m4UMKhWUu3eC2yzcDtUBlI16mQDoa3+R0db0DeyQ
+  kQ==
+  =mYoS
+  -----END PGP PUBLIC KEY BLOCK-----

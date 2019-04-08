@@ -1,0 +1,74 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Test backend origin
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/backend/origin'
+    actions:
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+  - description: Test backend servers
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/backend/servers'
+    actions:
+      backend:
+        servers:
+          - 'http://127.0.0.1:7357'
+          - 'http://127.0.0.1:7358'
+          - 'http://127.0.0.1:7359'
+
+tests:
+  - name: 'Test backend origin'
+    request:
+      url: 'https://test/backend/origin'
+    expect:
+      status: 200
+      body:
+        - regex: 'name=7357'
+
+  # Tests default loadbalancer algorithm (which is leastconn)
+  # Only tests that it does round-robin
+  - name: 'Test backend servers 1'
+    request:
+      url: 'https://test/backend/servers'
+    expect:
+      status: 200
+      body:
+        - regex: 'name=7357'
+
+  - name: 'Test backend servers 2'
+    request:
+      url: 'https://test/backend/servers'
+    expect:
+      status: 200
+      body:
+        - regex: 'name=7358'
+
+  - name: 'Test backend servers 3'
+    request:
+      url: 'https://test/backend/servers'
+    expect:
+      status: 200
+      body:
+        - regex: 'name=7359'
+
+  - name: 'Test backend servers 1 again'
+    request:
+      url: 'https://test/backend/servers'
+    expect:
+      status: 200
+      body:
+        - regex: 'name=7357'

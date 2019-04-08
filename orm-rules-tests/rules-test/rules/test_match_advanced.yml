@@ -1,0 +1,118 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test advanced match not'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/advanced_match/'
+        - paths:
+            not: True
+            ends_with:
+              - 'wrong'
+            contains:
+              - 'wrongo'
+        - query:
+            parameter: bad_param
+            not: True
+            exist: True
+      any:
+        - paths:
+            contains:
+              - 'have_this'
+              - 'or_have_this'
+        - query:
+            not: True
+            parameter: color
+            contains:
+              - red
+              - blue
+    actions:
+      synthetic_response: 'advanced_match'
+
+tests:
+  # Satisfy path beg '/advanced_match/', path contains 'have_this'.
+  - name: 'Test advanced match not 1'
+    request:
+      url: 'https://test/advanced_match/have_this?color=red'
+    expect:
+      status: 200
+      body:
+        - regex: 'advanced_match'
+
+  # Satisfy path beg '/advanced_match/', path contains 'or_have_this'.
+  - name: 'Test advanced match not 2'
+    request:
+      url: 'https://test/advanced_match/or_have_this?color=red&color=blue'
+    expect:
+      status: 200
+      body:
+        - regex: 'advanced_match'
+
+  # Satisfy path beg '/advanced_match/', query param not contain 'blue' or 'red'.
+  - name: 'Test advanced match not 3'
+    request:
+      url: 'https://test/advanced_match/have_none_but?color=green'
+    expect:
+      status: 200
+      body:
+        - regex: 'advanced_match'
+
+  # Generic
+  - name: 'Test advanced match not 4'
+    request:
+      url: 'https://test/advanced_match/no_bad_param?this_has_no=bad_param&color=green'
+    expect:
+      status: 200
+      body:
+        - regex: 'advanced_match'
+
+  # Not satisfying match path beg '/advanced_match/'
+  - name: 'Test advanced match not 1 wrong'
+    request:
+      url: 'https://test/matches_not/but_have_this'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+  # Not satisfying match paths not end 'wrong'
+  - name: 'Test advanced match not 2 wrong'
+    request:
+      url: 'https://test/advanced_match/but_have_this_wrong'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+  # Not satisfying match paths not contains 'wrongo'
+  - name: 'Test advanced match not 3 wrong'
+    request:
+      url: 'https://test/advanced_match/but_wrongo_have_this'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+  # Not satisfying match query not param exist 'bad_param'
+  - name: 'Test advanced match not 4 wrong'
+    request:
+      url: 'https://test/advanced_match/have_this?bad_param=present'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+  # Not satisfying any of the match any
+  - name: 'Test advanced match not 5 wrong'
+    request:
+      url: 'https://test/advanced_match/?color=blue&color=red'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'

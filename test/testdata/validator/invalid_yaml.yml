@@ -1,0 +1,6 @@
+---
+
+# Broken yaml
+foo:
+  bar:
+  - baz

@@ -1,0 +1,35 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Test match any
+    domains:
+      - test
+    matches:
+      any:
+        - paths:
+            exact:
+              - '/any/foo'
+        - paths:
+            exact:
+              - '/any/bar'
+    actions:
+      synthetic_response: 'match_any'
+
+tests:
+  - name: Test match any foo
+    request:
+      url: 'https://test/any/foo'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_any'
+
+  - name: Test match any bar
+    request:
+      url: 'https://test/any/bar'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_any'

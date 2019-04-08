@@ -1,0 +1,36 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Test 1
+    domains:
+      - www.example.com
+      - site.example.com
+   matches:
+     any:
+       - path:
+           equals:
+             - '/imba'
+    actions:
+      backends:
+        origin: origin.example.com
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Test 2
+    domains:
+      - www.example.com
+      - another-site.example.com
+    matches:
+      - any:
+          - path:
+              regex:
+                - '/megaimba/.*'
+    actions:
+      backend:
+        origin: another-origin..example.com
+

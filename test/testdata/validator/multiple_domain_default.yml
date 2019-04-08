@@ -1,0 +1,18 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: One domain default
+    domains:
+      - example.com
+    domain_default: True
+    actions:
+      synthetic_response: 'yeah'
+
+  - description: Another domain default
+    domains:
+      - example.com
+    domain_default: True
+    actions:
+      synthetic_response: 'yeah'

@@ -1,0 +1,41 @@
+- name: Install VMOD build dependencies
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - build-essential
+    - automake
+    - libtool
+    - python-docutils
+    - libpcre3-dev
+    - varnish-dev
+
+- name: Download vmod_variable
+  get_url:
+    url: "https://download.gnu.org.ua/release/vmod-variable/{{ vmod_variable }}.tar.gz"
+    dest: "/root/{{ vmod_variable }}.tar.gz"
+    checksum: 'sha256:633fe947f0c933b0679a9cd51939c88329e7a31b4d0328b1bde7ffe14af8e710'
+
+- name: Extract vmod_variable
+  unarchive:
+    remote_src: true
+    src: "/root/{{ vmod_variable }}.tar.gz"
+    dest: "{{ build_path }}"
+
+- stat:
+    path: /usr/lib/varnish/vmods/libvmod_variable.so
+  register: libvmod_variable
+
+- name: Run configure
+  shell: ./configure
+  args:
+    chdir: "{{ vmod_variable_build_path }}"
+    creates: "{{ vmod_variable_build_path }}/Makefile"
+
+- name: Make install vmod_variable
+  make:
+    chdir: "{{ vmod_variable_build_path }}"
+    target: "{{ item }}"
+  with_items:
+    - all
+    - install
+  when: not libvmod_variable.stat.exists

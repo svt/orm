@@ -1,0 +1,44 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Explicit HTTPS redir'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/https_redir/explicit'
+    actions:
+      https_redirection: True
+
+  - description: 'Disabled HTTPS redir'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/https_redir/disabled'
+    actions:
+      https_redirection: False
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: 'Test explicit HTTPS redir'
+    request:
+      url: 'http://test/https_redir/explicit'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: 'https://test/https_redir/explicit'
+
+  - name: 'Test disabled HTTPS redir'
+    request:
+      url: 'http://test/https_redir/disabled'
+    expect:
+      status: 200

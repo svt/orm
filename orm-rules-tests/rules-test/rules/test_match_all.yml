@@ -1,0 +1,44 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Test match all
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/all/foo'
+        - query:
+            parameter: 'match'
+            exact:
+              - 'me'
+    actions:
+      synthetic_response: 'match_all'
+
+tests:
+  - name: Test match all
+    request:
+      url: 'https://test/all/foo?match=me'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_all'
+
+  - name: Test match all wrong 1
+    request:
+      url: 'https://test/all/foo'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+  - name: Test match all wrong 2
+    request:
+      url: 'https://test/all/wont?match=me'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'

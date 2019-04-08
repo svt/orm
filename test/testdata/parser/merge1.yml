@@ -1,0 +1,14 @@
+---
+
+rules:
+  - description: foo
+    domains:
+      - example.com
+      - site.example.com
+
+---
+
+rules:
+  - description: bar
+    domains:
+      - example.com

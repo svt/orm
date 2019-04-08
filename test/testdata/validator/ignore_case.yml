@@ -1,0 +1,29 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: This rule should collide with
+    domains:
+      - example.com
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/super/snek/'
+            ignore_case: True
+    actions:
+      backend:
+        origin: 'origin.example.com'
+
+  - description: This other cool rule
+    domains:
+      - example.com
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/SUPER/SNEK/'
+    actions:
+      backend:
+        origin: 'another-origin.example.com'

@@ -1,0 +1,16 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Team B service backend
+    # Match requests that goes to the domain subdomain.orm.localdomain
+    domains:
+      - subdomain.orm.localdomain
+    # All requests that do not match any other rule (such as the one in rules/team-c/service.yml)
+    # will match this rule.
+    domain_default: True
+    actions:
+      # Send traffic that matches the above rules to team-b:s service team-b-service.
+      backend:
+        origin: 'http://team-b-service'

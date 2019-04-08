@@ -1,0 +1,37 @@
+---
+
+schema_version: 1
+
+crypto:
+  certificates:
+    - /etc/ssl/orm.pem
+
+custom_internal_healthcheck:
+  http:
+    method: GET
+    path: /orm-status
+    domain: test
+
+defaults:
+  https_redirection: true
+
+global_actions:
+  req_path:
+    - prefix:
+        add: /global
+  header_southbound:
+    - set:
+        field: 'GLOBALS-SOUTHBOUND'
+        value: 'SOUTHBOUND'
+  header_northbound:
+    - set:
+        field: 'GLOBALS-NORTHBOUND'
+        value: 'NORTHBOUND'
+
+internal_networks:
+  - 10.0.0.0/8
+
+dns:
+  nameservers:
+    - 1.1.1.1
+    - 1.0.0.1

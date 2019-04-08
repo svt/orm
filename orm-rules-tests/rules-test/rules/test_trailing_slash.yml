@@ -1,0 +1,123 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Test trailing_slash default (do nothing)
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/trailing_slash/default'
+    actions:
+      # defaults to 'trailing_slash: do_nothing'
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: Test trailing_slash default without slash (do nothing)
+    request:
+      url: 'https://test/trailing_slash/default?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/trailing_slash/default\?q=a&y=o'
+
+  - name: Test trailing_slash default with slash (do nothing)
+    request:
+      url: 'https://test/trailing_slash/default/?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/trailing_slash/default/\?q=a&y=o'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Test trailing_slash add
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/trailing_slash/add'
+    actions:
+      trailing_slash: add
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: Test trailing_slash add
+    request:
+      url: 'https://test/trailing_slash/add?q=a&y=o'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: '/trailing_slash/add/\?q=a&y=o'
+
+  - name: Test trailing_slash add (do not remove existing slash)
+    request:
+      url: 'https://test/trailing_slash/add/?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/trailing_slash/add/\?q=a&y=o'
+
+  - name: Test trailing_slash add (start with period)
+    request:
+      url: 'https://test/trailing_slash/add/.hidden_directory?q=a&y=o'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: '/trailing_slash/add/.hidden_directory/\?q=a&y=o'
+
+  - name: Test trailing_slash add (do not add when period in last part)
+    request:
+      url: 'https://test/trailing_slash/add/super.file?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/trailing_slash/add/super.file\?q=a&y=o'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Test trailing_slash remove
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/trailing_slash/remove'
+    actions:
+      trailing_slash: remove
+      backend:
+        origin: 'http://127.0.0.1:7357'
+
+tests:
+  - name: Test trailing_slash remove without slash
+    request:
+      url: 'https://test/trailing_slash/remove?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/trailing_slash/remove\?q=a&y=o'
+
+  - name: Test trailing_slash remove with slash
+    request:
+      url: 'https://test/trailing_slash/remove/?q=a&y=o'
+    expect:
+      status: 307
+      headers:
+        - field: Location
+          regex: '/trailing_slash/remove\?q=a&y=o'

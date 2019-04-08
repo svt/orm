@@ -1,0 +1,244 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Test match query begins_with
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/query/begins_with'
+        - query:
+            parameter: param
+            begins_with:
+              - 'this'
+    actions:
+      synthetic_response: 'match_query_begins_with'
+
+tests:
+  - name: Test match query begins_with exact
+    request:
+      url: 'https://test/query/begins_with?param=this'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_query_begins_with'
+
+  - name: Test match query begins_with
+    request:
+      url: 'https://test/query/begins_with?param=this_is_right&yeah=boi&oo=yo#yes'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_query_begins_with'
+
+  - name: Test match query begins_with wrong
+    request:
+      url: 'https://test/query/begins_with?param=begins_almost_with_thi_s&this=yeah'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Test match query ends_with
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/query/ends_with'
+        - query:
+            parameter: param
+            ends_with:
+              - 'this'
+    actions:
+      synthetic_response: 'match_query_ends_with'
+
+tests:
+  - name: Test match query ends_with exact
+    request:
+      url: 'https://test/query/ends_with?param=this'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_query_ends_with'
+
+  - name: Test match query ends_with
+    request:
+      url: 'https://test/query/ends_with?param=the_beginning_ends_with_this&yeah=boi&oo=yo#yes'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_query_ends_with'
+
+  - name: Test match query ends_with wrong
+    request:
+      url: 'https://test/query/ends_with?param=almost_ends_with&this=yo'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Test match query contains
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/query/contains'
+        - query:
+            parameter: param
+            contains:
+              - 'this'
+    actions:
+      synthetic_response: 'match_query_contains'
+
+tests:
+  - name: Test match query contains exact
+    request:
+      url: 'https://test/query/contains?param=this'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_query_contains'
+
+  - name: Test match query contains
+    request:
+      url: 'https://test/query/contains?param=anything_and_this_yo?yeah=boi&oo=yo#yes'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_query_contains'
+
+  - name: Test match query contains wrong
+    request:
+      url: 'https://test/query/contains/?param=thiz&this=this'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Test match query exact
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/query/exact'
+        - query:
+            parameter: param
+            exact:
+              - 'this'
+    actions:
+      synthetic_response: 'match_query_exact'
+
+tests:
+  - name: Test match query exact
+    request:
+      url: 'https://test/query/exact?param=this'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_query_exact'
+
+  - name: Test match query exact wrong
+    request:
+      url: 'https://test/query/exact?param=this_is_not_exactly&this=this'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Test match query regex
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/query/regex'
+        - query:
+            parameter: param
+            regex:
+              - 'm[uU]st_have_(yeah|ooo)!{3,4}'
+    actions:
+      synthetic_response: 'match_query_regex'
+
+tests:
+  - name: Test match query regex
+    request:
+      url: 'https://test/query/regex?param=mUst_have_ooo!!!'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_query_regex'
+
+  - name: Test match query regex wrong
+    request:
+      url: 'https://test/query/regex/?param=must_have_yeah!!'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Test match query param exist
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/query/exist'
+        - query:
+            parameter: param
+            exist: True
+    actions:
+      synthetic_response: 'match_query_exist_regex'
+
+tests:
+  - name: Test match query param exist
+    request:
+      url: 'https://test/query/exist?param=is_here'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_query_exist_regex'
+
+  - name: Test match query param exist wrong
+    request:
+      url: 'https://test/query/exist?no=param'
+    expect:  # domain_default backend
+      status: 200
+      body:
+        - regex: 'name=1337'

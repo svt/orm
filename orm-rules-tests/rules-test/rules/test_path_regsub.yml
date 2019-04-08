@@ -1,0 +1,78 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: 'regsub default'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/regsub/'
+    actions:
+      req_path:
+        - replace:
+            from_regex: '/regsub/DOOH/article(\d+)\.file'
+            to_regsub: '/preview/dooh/\1'
+      backend:
+        origin: http://127.0.0.1:7357
+
+  - description: 'regsub ignore_case'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/regsub_all/'
+    actions:
+      req_path:
+        - replace:
+            from_regex: '(.*)yo([a-z]+)(.*)yo([a-z]+)(.*)'
+            to_regsub: '\1yo_\2\3YO_\4\5'
+            ignore_case: True
+      backend:
+        origin: http://127.0.0.1:7357
+
+  - description: 'regsub with query'
+    domains:
+      - 'test'
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/regsub_with_query'
+    actions:
+      req_path:
+        - replace:
+            from_regex: '.*'
+            to_regsub: '/regsub_still_with_query'
+      backend:
+        origin: http://127.0.0.1:7357
+
+tests:
+  - name: 'Test regsub default'
+    request:
+      url: 'https://test/regsub/DOOH/article1337.file'
+    expect:
+      status: 200
+      body:
+        - regex: 'parsed_path=/preview/dooh/1337'
+
+  - name: 'Test regsub all ignore_case'
+    request:
+      url: 'https://test/regsub_all/yobro/and_YowOwZaH'
+    expect:
+      status: 200
+      body:
+        - regex: 'parsed_path=/regsub_all/yo_bro/and_YO_wOwZaH'
+
+  - name: 'Test regsub with query'
+    request:
+      url: 'https://test/regsub_with_query?q=a&y=o'
+    expect:
+      status: 200
+      body:
+        - regex: 'path=/regsub_still_with_query\?q=a&y=o'

@@ -1,0 +1,9 @@
+---
+
+rules:
+  - description: 'foo'
+    domains:
+      - example.com
+  - description: 'baz'
+    domains:
+      - example.com

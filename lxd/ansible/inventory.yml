@@ -1,0 +1,6 @@
+all:
+  hosts:
+    orm:
+      ansible_connection: 'lxd'
+      executable: '/bin/bash'
+      remote_addr: 'orm'

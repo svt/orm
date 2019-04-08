@@ -1,0 +1,10 @@
+[Unit]
+Description=HTTP echo server on port %I
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/root/echo_server.py --port %i --name %i
+
+[Install]
+WantedBy=multi-user.target
