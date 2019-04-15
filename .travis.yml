@@ -1,0 +1,96 @@
+---
+
+dist: xenial
+
+language: python
+python: 3.6.7
+
+install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y python3-virtualenv
+  - |
+    sudo apt-get remove --purge -y lxd lxd-client;
+    sudo snap install lxd;
+    sudo sh -c 'echo PATH=/snap/bin:$PATH >> /etc/environment';
+    sudo lxd waitready;
+    sudo lxd init --auto;
+    sudo usermod -a -G lxd travis;
+    echo 'LXD configured!'
+  - 'sudo sh -c "echo ORM_TAG=$(git describe --tags) >> /etc/environment"'
+
+stages:
+  - test
+  - build
+
+_lint_template: &_lint_template
+  stage: test
+  script: 'make lint'
+
+_unit_tests_template: &_unit_tests_template
+  stage: test
+  script: 'make test'
+
+_system_tests_template: &_system_tests_template
+  stage: test
+  # 'sudo su travis' needed for travis to have new lxd group.
+  script: 'sudo su travis -c "make deployment-test"'
+
+jobs:
+  include:
+    - <<: *_lint_template
+      name: Code lint (python 3.6.7)
+      python: 3.6.7
+
+    - <<: *_lint_template
+      name: Code lint (python 3.7.1)
+      python: 3.7.1
+
+    - <<: *_unit_tests_template
+      name: Unit tests (python 3.6.7)
+      python: 3.6.7
+
+    - <<: *_unit_tests_template
+      name: Unit tests (python 3.7.1)
+      python: 3.7.1
+
+    - <<: *_system_tests_template
+      name: ORM system tests (python 3.6.7)
+      python: 3.6.7
+
+    - <<: *_system_tests_template
+      name: ORM system tests (python 3.7.1)
+      python: 3.7.1
+
+    - <<: *_system_tests_template
+      name: ORM system tests (pypy 3.5)
+      python: pypy3.5
+
+    - name: Build python package
+      stage: build
+      script: 'make dist'
+      before_deploy:
+        - 'export ORM_TAG=$(git describe --tags)'
+      deploy:
+        provider: pypi
+        skip_cleanup: true
+        user: SVT
+        password:
+          secure: "t/2+p2MyXcH//tRCgSRb4tUApdkcJvlUL4sN+n+QNtrjSewxChwDjlnmS9bb6DK8//7NSPcG1Q6cwX/F/2OwQfMoNQRNgm1Ulm3lF69o2EF05BpesdtIXvREt+YYiDT+KGXJWAh9MwQ6hW1HY+mk6VBUxG46vsdnu1SoYieH50wgE4ceQhgc05vVnTeW1Rg+wl/C4/pZHPpV+ohBhTyNLlZNcQmtoXEu6wwaX5OIw8eKyOHGC6RzXpUij/AEMjwIDquc+0jwcWhQda2qa4fxn4rNwvugUrEkMeU3tYqNp6fTAeefhSy3aZdvrr1zHjzsUIZmEUPoEY1LSZI4YRv++uHzdq7qnpsxM/D2AVnzyKU0rnl4VrEexwOfv8kUevov0Ho0eUPog1lKQeGLWa1gJdHlyANoEHIxIlPZHhPhTxrnWBKzAlO/xyUhP+C6/1GHm931B3lxvzgerIQpOmbYSu95GEgPQ/ZyOkMVtxwxfbTW23BUfZFavDqfLpL1scbys5zGbWZKv4k23tCZ2EWg0WowPzlbbAsati305LBrK8dBIE1l6hbjgSv6COsOdplMTuGkNe6IEVMGsu/EFSerJAuC7I7UUH+0/T5mLTtGfg0FUpQlHS2ulwfZdlCyxThIboU0MtPrG3Me6eQ5DyoHTOjEyoBDtOzazrhyXxoD/xk="
+        on:
+          tags: true
+        repo: 'SVT/orm'
+
+    - name: Build docker package
+      stage: build
+      script: 'make build-docker'
+      deploy:
+        provider: script
+        script: bash ci/push_docker.sh
+        on:
+          tags: true
+        repo: 'SVT/orm'
+
+env:
+  global:
+    - secure: "XQANOwWg3/iWwKogKMza3I9cHgnOhz+2LMt/f6TyBeOx6g1UbkJwil9OZPIQpj8B6ENi9e0PxYMU/rLFq/f/Y6BBMBFI5PLdDs78kpCHL84rIyf+eCba0k9jioujLJ6gsNrRNl3kq4XXW3J5LS1mVoBdHNBbShfZZC7anqQzL0OvPj3YLaNtzpvq7pih942ToSpDaa605Yc7EuZzMo7t5pKRiZwEfL22ckpx2C58jFl/YF8kZs59CvFOEDg1etLFSloXKRMASIfBsNysis+xD6NZ5KKcBSYx83TPIDjvisGiC7cCwhbqU2n4e+6Pjbpj+zHnpVRRBVD4V3gizd8Unm+9dB4nOeaWPocc+0cNBPhflxmdRUBJjR5xXCD7hyjyCcsYONofLjsjcTUmdltYsxQJfj83iZDtVT3D5OITUZzYoy/4/XbTPCa0zfsYutWQ6p2lw7IHBSwvtAFmzMP0+2sb7nJBwH6ULoMaOxftqdo7AayfYgEohvSi/03b10I08TjzTQl2ZZDn+AHyY9IGCunLeHDLJ20k8C6vxmM7Iza8a04pqpQdmQsK/7b4726Vipfa9429sIayb1woAbYlwJb8ZScO6wAU/JJj43H57jcBgf1k/6Xn4QNP4gAlfbA62nwUPVu3/htbNkwFsGN1coibN1uHCyWE0ulwTEanjtI="
+    - secure: "PJZ4LQtO6YRM/c/afrYFHYyUpQz4ZCNhF2HEQ8h/TyWgJSfNVoqSJON+oKimTlsPYasQodY9uZUJqGXmPjLGJ9p3Br2KDTiGbTC4q8bl2P1bIqVmUwuAKxpYxjNWB23cD5/BsU1XBxuoIKWMMAeStZVQbHcY1pkxs2cB8DDMhu/jqemWHUHzGaB5LzbxUJC9IpfhdphQtOlBaSl/2/QYKyQMgLaQx04r1SpdxbCeSJwB2a4JLs9RQuHgfeRLKAUHVszWpp47owA3qcAymKiB+BT+AbSsgUGs9mxritwypNCpEiuIOXZFRB1rG6mSQ6UdMfNW/3EoIM+F892imMBhyUXgcUYCU2XIBSLe4xEo+OMCiScHpGB5nDlBalKRpWPAZYw1MH/qWRKZa4i8g0aSiYwG19TjAN/pANNWyFif+h118kFha6oCELrunpABKONWUpMY8VZY/70i+ASgITQ/RQvK4hlTj9lxrvyM278wuT2TSKs4Z02KmXAd1paatQA7U1tWPj476uMe8wTuEDkbmA+zhOOXhxXyTMywX1pEcKJNyGj/hTqGaEFFu3mjfaJghgHXk/VvGwuEX3K0rvEzCGiWkG0C7K47xjIM9uV3lVsxTqV1YzIemTXwcLn0HNB/S8dsFNWCRi0gLr4jAlddY8PWsF47JtRQw74VgbK9Iuw="

@@ -1,10 +1,12 @@
+import os
+
 from setuptools import setup
 
 setup(
     name='origin-routing-machine',
     # Do not set 'version' manually and do not check in generated version.
     # 'version' is substituted when running make. See the Makefile.
-    version='TBD',
+    version=os.environ.get('ORM_TAG', 'no_tag'),
     author='Webcore Infra',
     author_email='webcore-infra@svt.se',
     packages=['orm'],

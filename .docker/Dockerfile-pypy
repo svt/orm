@@ -8,7 +8,6 @@ WORKDIR /app
 
 COPY . /app
 RUN cd /app \
-    && sed -i -e "s/version=.*/version='${ORM_TAG}',/" setup.py \
     && pypy3 setup.py sdist \
     && pip install dist/*.tar.gz
 

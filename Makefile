@@ -57,9 +57,7 @@ ${TESTS}:
 
 dist: clean-dist env
 	. env/bin/activate && \
-		sed -i.bak -e "s/version=.*/version='${ORM_TAG}',/" setup.py && \
-		python setup.py sdist && \
-		mv setup.py.bak setup.py
+		ORM_TAG=${ORM_TAG} python setup.py sdist
 
 clean-deployment-test:
 	rm -f orm-rules-tests/globals-test/cache.pkl
