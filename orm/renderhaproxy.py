@@ -38,8 +38,12 @@ class RenderHAProxy(RenderOutput):
             self.backends.append('')
             self.backends.append('backend ' + rule_id)
         for origin in origins:
-            scheme, hostname, port = parser.extract_from_origin(origin)
-            server = ('    server ' + parser.normalize(origin)
+            origin_instance = origin
+            if isinstance(origin, str):
+                origin_instance = {'server':origin}
+
+            scheme, hostname, port = parser.extract_from_origin(origin_instance['server'])
+            server = ('    server ' + parser.normalize(origin_instance['server'])
                       + ' ' + hostname + ':' + port
                       + ' resolvers dns resolve-prefer ipv4'
                       + ' check')
@@ -49,6 +53,12 @@ class RenderHAProxy(RenderOutput):
             elif scheme != 'http':
                 raise ORMInternalRenderException('ERROR: unhandled origin '
                                                  'scheme: ' + scheme)
+            if origin_instance.get('max_connections', False):
+                server += ' maxconn {}'.format(origin_instance['max_connections'])
+
+            if origin_instance.get('max_queued_connections', False):
+                server += ' maxqueue {}'.format(origin_instance['max_queued_connections'])
+
             self.backends.append(server)
 
     def make_actions(self, action_config, rule_id):
