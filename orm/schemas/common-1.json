@@ -184,8 +184,28 @@
           "servers": {
             "type": "array",
             "items": {
-              "type": "string",
-              "format": "origin"
+              "oneOf": [{
+                "type": "string",
+                "format": "origin"
+              }, {
+                "type": "object",
+                "properties": {
+                  "server": {
+                    "type": "string",
+                    "format": "origin"
+                  },
+                  "max_connections": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "max_queued_connections": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": ["server"],
+                "additionalProperties": false
+              }]
             }
           }
         },
