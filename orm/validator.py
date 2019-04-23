@@ -190,6 +190,8 @@ orm_origin = (r'^(' + rfc2396_scheme + parser.scheme_delim + ')?'
 regex_origin = re.compile(orm_origin)
 @FormatChecker.cls_checks('origin')
 def format_check_origin(instance):
+    if not isinstance(instance, str):
+        return False
     if not bool(regex_origin.search(instance)):
         return False
     scheme, host, port = (None, None, None)
