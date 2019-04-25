@@ -592,6 +592,8 @@ Sets [backend](#backend) [origin_object](#origin_object) maximum number of queue
 
 Translates into haproxy server [maxqueue](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-maxqueue) parameter.
 
+The queue timeout is 10s.
+
 ## http-header-field-name
 
 RFC7230 header field name.
