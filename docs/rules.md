@@ -8,7 +8,7 @@ _Matches_ are matched against parts of the HTTP requests, such as path, header o
 
 ORM `tests` are user specified tests that can be run during CI jobs (or any mechanism you prefer) in order to verify that the ORM rules give the desired result. Tests are optional.
 
-Please see the [syntax reference](syntax_reference.md) for all available rule parameters. More examples are available in [examples/](../examples/).
+Please see the [syntax reference](syntax_reference.md) for all available rule parameters. More examples are available in [examples/](../example/README.md).
 
 ## Examples
 
