@@ -2,7 +2,7 @@
 
 ## What it is
 
-ORM is a reverse proxy configuration generator. It generates configuration for haproxy and varnish to perform HTTP routing and rewriting, backed by a user friendly YAML config format called ORM rules with built-in collision detection.
+ORM is a reverse proxy configuration generator. It generates configuration for HAProxy and Varnish to perform HTTP routing and rewriting, backed by a user friendly YAML config format called ORM rules with built-in collision detection.
 
 ORM has been used in production at SVT since 2018, handling thousands of requests per second. 16 different teams (and growing) manages their own rules in a shared repository with around 600 rules.
 
