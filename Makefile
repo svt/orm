@@ -29,8 +29,8 @@ env: requirements.txt
 update-deps:
 	virtualenv -p ${PYTHON} update_deps
 	@. update_deps/bin/activate && \
-		CUSTOM_COMPILE_COMMAND="make $@" \
-		  pip install 'pip-tools>=2.0,<3' && \
+		export CUSTOM_COMPILE_COMMAND="make $@" && \
+		pip install 'pip-tools>=2.0,<3' && \
 			pip-compile --upgrade --output-file requirements.txt setup.py && \
 			pip-compile --upgrade --output-file build_requirements.txt build_requirements.in
 	rm -rf update_deps
