@@ -23,10 +23,6 @@ stages:
   - test
   - build
 
-_lint_template: &_lint_template
-  stage: test
-  script: 'make lint'
-
 _unit_tests_template: &_unit_tests_template
   stage: test
   script: 'make test'
@@ -37,13 +33,10 @@ _system_tests_template: &_system_tests_template
 
 jobs:
   include:
-    - <<: *_lint_template
-      name: Code lint (python 3.6.7)
-      python: 3.6.7
-
-    - <<: *_lint_template
-      name: Code lint (python 3.7.1)
+    - name: Code lint (python 3.7.1)
       python: 3.7.1
+      stage: test
+      script: 'make lint'
 
     - name: Formatting (python 3.7.1)
       python: 3.7.1
