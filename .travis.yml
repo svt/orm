@@ -44,12 +44,20 @@ jobs:
       script: make formatting
 
     - <<: *_unit_tests_template
+      name: Unit tests (python 3.5)
+      python: "3.5"
+
+    - <<: *_unit_tests_template
       name: Unit tests (python 3.6.7)
       python: 3.6.7
 
     - <<: *_unit_tests_template
       name: Unit tests (python 3.7.1)
       python: 3.7.1
+
+    - <<: *_system_tests_template
+      name: ORM system tests (python 3.5)
+      python: "3.5"
 
     - <<: *_system_tests_template
       name: ORM system tests (python 3.6.7)
