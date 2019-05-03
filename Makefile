@@ -17,16 +17,27 @@ DOCKER ?= docker
 DOCKER_IMAGE_BASE_NAME ?= svtwebcoreinfra/orm
 PYPI_PACKAGE_NAME = origin-routing-machine
 
-PYTHON ?= python3
-
+ifdef CI
+ENV_PREP_COMMAND = true
 env: requirements.txt
+	@echo "CI detected!"
+	make env-install
+else
+ENV_PREP_COMMAND = . env/bin/activate
+PYTHON ?= python3
+env: requirements.txt
+	@echo "This is a local build, I will use virtualenv"
 	virtualenv -p ${PYTHON} env
-	. env/bin/activate && \
-		python --version && pip --version && \
-		pip install -r build_requirements.txt && \
-		pip-sync build_requirements.txt requirements.txt && \
-		touch env
+	. env/bin/activate && make env-install
+endif
 
+env-install: requirements.txt
+	python --version && pip --version
+	pip install -r build_requirements.txt
+	pip-sync build_requirements.txt requirements.txt
+	touch env
+
+ifndef CI
 update-deps:
 	virtualenv -p ${PYTHON} update_deps
 	@. update_deps/bin/activate && \
@@ -35,34 +46,35 @@ update-deps:
 			pip-compile --upgrade --output-file requirements.txt setup.py && \
 			pip-compile --upgrade --output-file build_requirements.txt build_requirements.in
 	rm -rf update_deps
+endif
 
 list-outdated-deps: env
-	@. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
 		pip list --outdated
 
 lint: env
-	@. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
 		echo 'lint code' && pylint ${CODEFILES} && \
 		echo 'lint tests' && pylint --disable=similarities ${TESTFILES} && \
 		echo 'check formatting' && \
 		(black --check orm || echo "Run 'make black' to run the formatter")
 
 black:
-	@. env/bin/activate && black orm
+	$(ENV_PREP_COMMAND) && black orm
 
 ${LINTFILES}:
-	@. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
 		pylint $(subst lint_,,$@).py
 
 test: env ${TESTS}
 
 ${TESTS}:
 	@echo "Test: $@"
-	@. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
 		PYTHONPATH=. python test/$@.py
 
 dist: clean-dist env
-	. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
 		ORM_TAG=${ORM_TAG} python setup.py sdist
 
 clean-deployment-test:
@@ -141,14 +153,14 @@ start-orm-deployment: lxd/dist/orm-image.tar.gz
 	(lxc info orm | grep -q 'Status: Running') || lxc start orm
 
 deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
-	. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
 		pip install dist/${PYPI_PACKAGE_NAME}-${ORM_TAG}.tar.gz
 	@echo "Linting deployment test rules"
-	. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
 		yamllint -c orm-rules-tests/.yamllint orm-rules-tests/
 	@echo "Testing rules without globals actions"
 	orm-rules-tests/start_echo_servers.sh
-	. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
     orm \
 			-r 'orm-rules-tests/rules-test/rules/**/*.yml' \
 			-G 'orm-rules-tests/rules-test/globals.yml' \
@@ -156,14 +168,14 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 			-o out
 	lxd/update-orm-config.sh out
 	orm-rules-tests/wait_for_orm.sh
-	. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
 		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/rules/**/*.yml' && \
 		lxc file push orm-rules-tests/test-maxconn-maxqueue-haproxy-output.sh orm/root/ && \
 		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
 
 	@echo "Testing rules with globals actions"
 	orm-rules-tests/start_echo_servers.sh
-	. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
     orm \
 			-r 'orm-rules-tests/globals-test/rules/**/*.yml' \
 			-G 'orm-rules-tests/globals-test/globals.yml' \
@@ -171,7 +183,7 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 			-o out
 	lxd/update-orm-config.sh out
 	orm-rules-tests/wait_for_orm.sh
-	. env/bin/activate && \
+	$(ENV_PREP_COMMAND) && \
 		lxd/test-orm-config.sh 'orm-rules-tests/globals-test/rules/**/*.yml'
 
 release-test:
