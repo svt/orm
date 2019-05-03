@@ -52,7 +52,7 @@ sub vcl_pipe {
 
   # set bereq.http.Connection = "Close";
 
-  # Support websockets (https://varnish-cache.org/docs/5.1/users-guide/vcl-example-websockets.html)
+  # Support websockets (https://varnish-cache.org/docs/6.0/users-guide/vcl-example-websockets.html)
   if (req.http.upgrade) {
     set bereq.http.upgrade = req.http.upgrade;
   }
@@ -156,7 +156,7 @@ sub use_backend {
     return (pipe);
   }
 
-  # Support websockets (https://varnish-cache.org/docs/5.1/users-guide/vcl-example-websockets.html)
+  # Support websockets (https://varnish-cache.org/docs/6.0/users-guide/vcl-example-websockets.html)
   if (req.http.upgrade ~ "(?i)websocket") {
     return (pipe);
   }
