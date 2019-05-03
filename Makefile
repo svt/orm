@@ -152,8 +152,8 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 	orm-rules-tests/wait_for_orm.sh
 	. env/bin/activate && \
 		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/rules/**/*.yml' && \
-	lxc file push orm-rules-tests/test-maxconn-maxqueue-haproxy-output.sh orm/root/ && \
-	lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
+		lxc file push orm-rules-tests/test-maxconn-maxqueue-haproxy-output.sh orm/root/ && \
+		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
 
 	@echo "Testing rules with globals actions"
 	orm-rules-tests/start_echo_servers.sh
