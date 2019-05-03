@@ -15,6 +15,7 @@ install:
     sudo lxd waitready;
     sudo lxd init --auto;
     sudo usermod -a -G lxd travis;
+    sudo chown travis /var/snap/lxd/common/lxd/unix.socket
     echo 'LXD configured!'
   - 'sudo sh -c "echo ORM_TAG=$(git describe --tags) >> /etc/environment"'
 
@@ -32,8 +33,7 @@ _unit_tests_template: &_unit_tests_template
 
 _system_tests_template: &_system_tests_template
   stage: test
-  # 'sudo su travis' needed for travis to have new lxd group.
-  script: 'sudo su travis -c "make deployment-test"'
+  script: 'make deployment-test'
 
 jobs:
   include:
