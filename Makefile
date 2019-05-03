@@ -57,7 +57,7 @@ lint: env
 		echo 'lint code' && pylint ${CODEFILES} && \
 		echo 'lint tests' && pylint --disable=similarities ${TESTFILES} && \
 		echo 'check formatting' && \
-		(black --check orm || echo "Run 'make black' to run the formatter")
+		(black --check orm || (echo "Run 'make black' to run the formatter"; exit 1))
 
 black:
 	$(ENV_PREP_COMMAND) && black orm
