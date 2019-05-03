@@ -19,11 +19,8 @@ The internal data structures are fed into the [configuration renderers](#configu
 ### Rule validation
 
 Rules are validated in `orm/validator.py` by doing:
-- YAML syntax validation
 - ORM schema validation
 - Additional ORM constraints checks
-
-[yamllint](https://pypi.python.org/pypi/yamllint) is used for YAML syntax validation.
 
 ORM schema validation is performed according to versioned schemas in `orm/schemas/`. The [jsonschema](https://pypi.python.org/pypi/jsonschema) python library is used as validator, with [JSON Schema](http://json-schema.org/) [draft 4](https://tools.ietf.org/html/draft-fge-json-schema-validation-00).
 
