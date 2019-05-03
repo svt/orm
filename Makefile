@@ -55,11 +55,15 @@ list-outdated-deps: env
 lint: env
 	$(ENV_PREP_COMMAND) && \
 		echo 'lint code' && pylint ${CODEFILES} && \
-		echo 'lint tests' && pylint --disable=similarities ${TESTFILES} && \
-		echo 'check formatting' && \
-		(black --check orm || (echo "Run 'make black' to run the formatter"; exit 1))
+		echo 'lint tests' && pylint --disable=similarities ${TESTFILES}
+
+formatting:
+	$(ENV_PREP_COMMAND) && pip install black
+	@echo 'check formatting'
+	black --check orm || (echo "Run 'make black' to run the formatter"; exit 1)
 
 black:
+	$(ENV_PREP_COMMAND) && pip install black
 	$(ENV_PREP_COMMAND) && black orm
 
 ${LINTFILES}:

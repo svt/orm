@@ -45,6 +45,11 @@ jobs:
       name: Code lint (python 3.7.1)
       python: 3.7.1
 
+    - name: Formatting (python 3.7.1)
+      python: 3.7.1
+      stage: test
+      script: make formatting
+
     - <<: *_unit_tests_template
       name: Unit tests (python 3.6.7)
       python: 3.6.7
