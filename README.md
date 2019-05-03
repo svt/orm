@@ -6,7 +6,7 @@ ORM is a reverse proxy configuration generator. It generates configuration for H
 
 ORM has been used in production at SVT since 2018, handling thousands of requests per second. 16 different teams (and growing) manages their own rules in a shared repository with around 600 rules.
 
-Have a look at our [deployment example](example/README.md) for a quick overview of what ORM can do!
+Have a look at our [deployment example](example/README.md) to get started running ORM yourself!
 
 ## How it works
 
