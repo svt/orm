@@ -6,10 +6,30 @@ ORM is a reverse proxy configuration generator. It generates configuration for H
 
 ORM has been used in production at SVT since 2018, handling thousands of requests per second. 16 different teams (and growing) manages their own rules in a shared repository with around 600 rules.
 
+Have a look at our [deployment example](example/README.md) for a quick overview of what ORM can do!
+
 ## How it works
 
-ORM manages routing configuration based on rules defined in yaml format. It uses yaml config files (referred to as ORM rules) to produce specific actions depending on each HTTP request's domain, path and query string.
+ORM manages routing configuration based on rules defined in yaml format. It uses yaml config files (referred to as ORM rules) to produce specific actions depending on each HTTP request's domain, path and query string. To route requests to `www.example.com` with a path beginning with `/example` (e.g. `curl www.example.com/example/path`) to the origin `https://example-backend.example.com`:
 
+```yaml
+---
+
+schema_version: 1
+
+rules:
+  - description: Rule for requests to www.example.com/example
+    domains:
+      - www.example.com
+    matches:
+      all:
+        - paths:
+            begins_with:
+              - '/example'
+    actions:
+      backend:
+        origin: 'https://example-backend.example.com'
+```
 Rules are written in a standard yaml format which is then converted to configuration files for the proxying services, i.e. HAProxy and Varnish. The rule definitions can then be stored and managed separately from other runtime configuration and rule design does not require knowledge of the configuration file formats for either.
 
 ORM supports HTTP and HTTPS for both incoming requests and for southbound (upstream) requests (to backends).
