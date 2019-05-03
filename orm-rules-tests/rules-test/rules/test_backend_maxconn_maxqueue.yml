@@ -1,0 +1,26 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Test backend with max_connections and max_queued_connections
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/backend/max_con'
+    actions:
+      backend:
+        servers:
+          - server: 'http://127.0.0.1:7359'
+            max_connections: 2
+            max_queued_connections: 3
+
+tests:
+  - name: 'Test availability of backend for max connections (rendered parameters verified elsewhere)'
+    request:
+      url: 'https://test/backend/max_con'
+    expect:
+      status: 200

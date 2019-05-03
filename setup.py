@@ -25,5 +25,5 @@ setup(
         'greenery>=3.1,<4',
         'requests>=2.18.4,<3',
         'jinja2>=2.10,<3'
-    ]
+    ],
 )

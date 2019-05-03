@@ -272,6 +272,24 @@ Contains one of the following objects:
 |---------|:--------:|----------------------------|
 | servers | ✓        | array of [origin](#origin) |
 
+| key     | required | type                                     |
+|---------|:--------:|------------------------------------------|
+| servers | ✓        | array of [origin_object](#origin_object) |
+
+### `origin_object`
+
+*object*
+
+Origin object with one or more properties.
+
+Contains one or more of the following objects:
+
+| key                    | required | type                                              |
+|------------------------|:--------:|---------------------------------------------------|
+| server                 | ✓        | [origin](#origin)                                 |
+| max_connections        |          | [max_connections](#max_connections)               |
+| max_queued_connections |          | [max_queued_connections](#max_queued_connections) |
+
 ### `req_path`
 
 *array of objects*
@@ -557,6 +575,24 @@ Specify actions that are always performed. The actions are performed before the 
 | header_northbound |          | [header_northbound](#header_southbound-header_northbound) |
 
 # Format types
+
+### max_connections
+
+*integer*
+
+Sets [backend](#backend) [origin_object](#origin_object) maximum number of connections.
+
+Translates into haproxy server [maxconn](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-maxconn) parameter
+
+### max_queued_connections
+
+*integer*
+
+Sets [backend](#backend) [origin_object](#origin_object) maximum number of queued connections.
+
+Translates into haproxy server [maxqueue](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-maxqueue) parameter.
+
+The queue timeout is 10s.
 
 ## http-header-field-name
 
