@@ -22,6 +22,7 @@ PYTHON ?= python3
 env: requirements.txt
 	virtualenv -p ${PYTHON} env
 	. env/bin/activate && \
+		python --version && pip --version && \
 		pip install -r build_requirements.txt && \
 		pip-sync build_requirements.txt requirements.txt && \
 		touch env
@@ -42,7 +43,12 @@ list-outdated-deps: env
 lint: env
 	@. env/bin/activate && \
 		echo 'lint code' && pylint ${CODEFILES} && \
-		echo 'lint tests' && pylint --disable=similarities ${TESTFILES}
+		echo 'lint tests' && pylint --disable=similarities ${TESTFILES} && \
+		echo 'check formatting' && \
+		(black --check orm || echo "Run 'make black' to run the formatter")
+
+black:
+	@. env/bin/activate && black orm
 
 ${LINTFILES}:
 	@. env/bin/activate && \
