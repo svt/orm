@@ -8,6 +8,7 @@ import orm.parser as parser
 class ParseRulesTest(unittest.TestCase):
     #pylint:disable=too-many-instance-attributes
     def setUp(self):
+        self.maxDiff = None
         testpath = 'test/testdata/parser/'
         self.valid_rule_file = testpath + 'rule.yml'
         self.valid_rule_file2 = testpath + 'rule2.yml'
