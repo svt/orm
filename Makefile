@@ -193,5 +193,6 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 release-test:
 	make clean
 	make lint
+	make black
 	make test
 	make deployment-test

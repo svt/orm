@@ -313,7 +313,7 @@ def parse_rules(yml_files, defaults=None):
         yml_docs = parse_yaml_file(yml_file)
         for doc in yml_docs:
             parsed_doc = parse_document(doc)
-            for domain, rules in parsed_doc["rules"].items():
+            for domain, rules in sorted(parsed_doc["rules"].items()):
                 merged_documents["rules"].setdefault(domain, [])
                 for rule in rules:
                     rule_copy = copy.deepcopy(rule)
