@@ -1,5 +1,5 @@
 global
-    log /dev/rsyslog local2
+    log /dev/rsyslog len 4096 local2
     user {{ user }}
     group {{ group }}
     stats socket /var/run/haproxy.sock mode 0660 level admin user {{ control_user }} group {{ control_group }}
