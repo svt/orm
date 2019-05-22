@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Port echo_server.py used in deployment tests to python3.
+- Extended log format to include multiple timing fields.
 
 ## [1.0.0] - 2019-03-15
 
