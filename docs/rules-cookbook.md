@@ -7,22 +7,23 @@
 		- [1.3  Negative matching](#13-negative-matching)
 		- [1.4  Combining different matching methods](#14-combining-different-matching-methods)
 		- [1.5 `domain_default` matching](#15-domaindefault-matching)
-	- [2. Routing](#2-routing)
-		- [2.1 Routing to a single backend](#21-routing-to-a-single-backend)
-		- [2.2 Balancing over multiple backends](#22-balancing-over-multiple-backends)
-		- [2.3 Multiple backends with custom queue size and connection limits:](#23-multiple-backends-with-custom-queue-size-and-connection-limits)
-	- [3. Rewriting](#3-rewriting)
-		- [3.1 Rewriting paths](#31-rewriting-paths)
-		- [3.2 Rewriting headers](#32-rewriting-headers)
-	- [4. Redirecting](#4-redirecting)
-		- [4.1 Simple redirection](#41-simple-redirection)
-		- [4.2 Redirection with rewriting](#42-redirection-with-rewriting)
-	- [5. Complete examples](#5-complete-examples)
-		- [5.1 Routing requests to a single backend and rewriting request headers](#51-routing-requests-to-a-single-backend-and-rewriting-request-headers)
-		- [5.2 Routing requests to certain paths to one backend and redirecting everything else](#52-routing-requests-to-certain-paths-to-one-backend-and-redirecting-everything-else)
-		- [5.3 Routing requests to different backends based on query parameters](#53-routing-requests-to-different-backends-based-on-query-parameters)
-		- [5.4 Redirecting requests to a single URL](#54-redirecting-requests-to-a-single-url)
-		- [5.5 Redirecting requests and rewriting the request path](#55-redirecting-requests-and-rewriting-the-request-path)
+	- [2. Actions](#2-actions)
+		- [2.1. Routing](#21-routing)
+			- [2.1.1 Routing to a single backend](#211-routing-to-a-single-backend)
+			- [2.1.2 Balancing over multiple backends](#212-balancing-over-multiple-backends)
+			- [2.1.3 Multiple backends with custom queue size and connection limits:](#213-multiple-backends-with-custom-queue-size-and-connection-limits)
+		- [2.2. Rewriting](#22-rewriting)
+			- [2.2.1 Rewriting paths](#221-rewriting-paths)
+			- [2.2.2 Rewriting headers](#222-rewriting-headers)
+		- [2.3. Redirecting](#23-redirecting)
+			- [2.3.1 Simple redirection](#231-simple-redirection)
+			- [2.3.2 Redirection with rewriting](#232-redirection-with-rewriting)
+	- [3. Complete examples](#3-complete-examples)
+		- [3.1 Routing requests to a single backend and rewriting request headers](#31-routing-requests-to-a-single-backend-and-rewriting-request-headers)
+		- [3.2 Routing requests to certain paths to one backend and redirecting everything else](#32-routing-requests-to-certain-paths-to-one-backend-and-redirecting-everything-else)
+		- [3.3 Routing requests to different backends based on query parameters](#33-routing-requests-to-different-backends-based-on-query-parameters)
+		- [3.4 Redirecting requests to a single URL](#34-redirecting-requests-to-a-single-url)
+		- [3.5 Redirecting requests and rewriting the request path](#35-redirecting-requests-and-rewriting-the-request-path)
 
 <!-- /TOC -->
 
@@ -200,9 +201,11 @@ Complete rule example:
         value: 'www.mydomain.com'
 ```
 
-## 2. Routing
+## 2. Actions
 
-### 2.1 Routing to a single backend
+### 2.1. Routing
+
+#### 2.1.1 Routing to a single backend
 
 Routes all matched requests to the backend at `https://my-backend.mydomain.com`:
 
@@ -212,7 +215,7 @@ Routes all matched requests to the backend at `https://my-backend.mydomain.com`:
       origin: 'https://my-backend.mydomain.com'
 ```
 
-### 2.2 Balancing over multiple backends
+#### 2.1.2 Balancing over multiple backends
 
 Spreads the matched requests over two servers:
 
@@ -224,7 +227,7 @@ Spreads the matched requests over two servers:
         - 'https://backend-2.mydomain.com'
 ```
 
-### 2.3 Multiple backends with custom queue size and connection limits:
+#### 2.1.3 Multiple backends with custom queue size and connection limits:
 
 ```
   actions:
@@ -238,9 +241,9 @@ Spreads the matched requests over two servers:
           max_queued_connections: 1024
 ```
 
-## 3. Rewriting
+### 2.2. Rewriting
 
-### 3.1 Rewriting paths
+#### 2.2.1 Rewriting paths
 
 Add a prefix to the request path:
 
@@ -281,7 +284,7 @@ The above actually removes a the prefix '/some/path' from the path, which can al
           remove: /some/path
 ```
 
-### 3.2 Rewriting headers
+#### 2.2.2 Rewriting headers
 
 When manipulating headers, _southbound_ is the direction of the incoming request, i.e. toward the origin, and _northbound_ is the direction of the response, i.e. toward the client.
 
@@ -379,9 +382,9 @@ Temporarily redirect matching requests to a new domain using HTTPS and adjust th
 					  add: /redirected
 ```
 
-## 5. Complete examples
+## 3. Complete examples
 
-### 5.1 Routing requests to a single backend and rewriting request headers
+### 3.1 Routing requests to a single backend and rewriting request headers
 
 ```
 rules:
@@ -416,7 +419,7 @@ rules:
         - remove: 'WWW-Authenticate'
 ```
 
-### 5.2 Routing requests to certain paths to one backend and redirecting everything else
+### 3.2 Routing requests to certain paths to one backend and redirecting everything else
 
 ```
 rules:
@@ -446,7 +449,7 @@ rules:
             value: 'my.origin.com'
 ```
 
-### 5.3 Routing requests to different backends based on query parameters
+### 3.3 Routing requests to different backends based on query parameters
 
 ```
 rules:
@@ -484,7 +487,7 @@ rules:
             value: 'other.origin.com'
 ```
 
-### 5.4 Redirecting requests to a single URL
+### 3.4 Redirecting requests to a single URL
 
 ```
 rules:
@@ -499,7 +502,7 @@ rules:
         domain: www.redirect-domain.com
 ```
 
-### 5.5 Redirecting requests and rewriting the request path
+### 3.5 Redirecting requests and rewriting the request path
 
 ```
 rules:
