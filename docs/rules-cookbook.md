@@ -185,20 +185,20 @@ The `matches` directive can only be present in a rule that does *NOT* have the `
 Complete rule example:
 
 ```
-- description: www.domain.local - domain default
+- description: www.domain.example - domain default
   domains:
-    - www.mydomain.com
+    - www.domain.example
   domain_default: True
   actions:
     backend:
-      origin: 'https://default-origin.localdomain'
+      origin: 'https://default-origin.example'
     header_southbound:
       - set:
         field: 'Host'
-        value: 'default-origin.localdomain'
+        value: 'default-origin.example'
       - set:
         field: 'X-Forwarded-Host'
-        value: 'www.mydomain.com'
+        value: 'www.domain.example'
 ```
 
 ## 2. Actions
@@ -207,12 +207,12 @@ Complete rule example:
 
 #### 2.1.1 Routing to a single backend
 
-Routes all matched requests to the backend at `https://my-backend.mydomain.com`:
+Routes all matched requests to the backend at `https://my-backend.domain.example`:
 
 ```
   actions:
     backend:
-      origin: 'https://my-backend.mydomain.com'
+      origin: 'https://my-backend.domain.example'
 ```
 
 #### 2.1.2 Balancing over multiple backends
@@ -223,8 +223,8 @@ Spreads the matched requests over two servers:
   actions:
     backend:
       servers:
-        - 'https://backend-1.mydomain.com'
-        - 'https://backend-2.mydomain.com'
+        - 'https://backend-1.domain.example'
+        - 'https://backend-2.domain.example'
 ```
 
 #### 2.1.3 Multiple backends with custom queue size and connection limits:
@@ -233,10 +233,10 @@ Spreads the matched requests over two servers:
   actions:
     backend:
       servers:
-        - server: 'https://small-backend.mydomain.com'
+        - server: 'https://small-backend.domain.example'
           max_connections: 32
           max_queued_connections: 16
-        - server: 'https://large-backend.mydomain.com'
+        - server: 'https://large-backend.domain.example'
           max_connections: 2048
           max_queued_connections: 1024
 ```
@@ -295,7 +295,7 @@ Setting the southbound host header:
     header_southbound:
       - set:
           field: 'Host'
-          value: 'backend-host-name.localdomain'
+          value: 'backend-host-name.domain.example'
 ```
 
 Adding a southbound header that the backend application requires:
@@ -345,7 +345,7 @@ Temporary (HTTP 307) redirect of all matching requests to a new domain:
   actions:
     redirect:
       type: temporary
-      domain: www.redirectdomain.com
+      domain: www.redirectdomain.example
 ```
 
 Permanent (HTTP 308) redirect of the same type, but redirect to HTTP specifically:
@@ -355,7 +355,7 @@ Permanent (HTTP 308) redirect of the same type, but redirect to HTTP specificall
     redirect:
       type: permament
       scheme: http
-      domain: www.redirectdomain.com
+      domain: www.redirectdomain.example
 ```
 
 Temporary (HTTP 307) redirect of all matching requests to a specific url:
@@ -364,7 +364,7 @@ Temporary (HTTP 307) redirect of all matching requests to a specific url:
   actions:
     redirect:
       type: temporary
-      url: https://www.redirectdomain.com/redirected/
+      url: https://www.redirectdomain.example/redirected/
 ```
 
 #### 2.3.2 Redirection with rewriting
@@ -376,7 +376,7 @@ Temporarily redirect matching requests to a new domain using HTTPS and adjust th
     redirect:
       type: temporary
       scheme: https
-      domain: www.redirectdomain.com
+      domain: www.redirectdomain.example
     path:
       - prefix:
           add: /redirected
@@ -390,7 +390,7 @@ Temporarily redirect matching requests to a new domain using HTTPS and adjust th
 rules:
   - description: My production web site
     domains:
-      - www.mydomain.com
+      - www.domain.example
     matches:
       all:
         - paths:
@@ -404,11 +404,11 @@ rules:
               - '/xml/'
     actions:
       backend:
-        origin: https://my.origin.com
+        origin: https://my.origin.example
       header_southbound:
         - set:
             field: 'Host'
-            value: 'my.origin.com'
+            value: 'my.origin.example'
         - set:
             field: 'Authorization'
             value: 'example-auth-header-content'
@@ -425,16 +425,16 @@ rules:
 rules:
   - description: Domain default rule that redirects requests that do not match any other rule
     domains:
-      - www.mydomain.com
+      - www.domain.example
     domain_default: True
     actions:
       redirect:
         type: permanent
-        url: https://my.redirect.url
+        url: https://my.redirect-url.example
 
   - description: Rule to route requests to a certain path to a backend
     domains:
-      - www.mydomain.com
+      - www.mydomain.example
     matches:
       all:
         - paths:
@@ -442,11 +442,11 @@ rules:
               - '/non-redirecting-path'
     actions:
       backend:
-        origin: https://my.origin.com
+        origin: https://my.origin.example
       header_southbound:
         - set:
             field: 'Host'
-            value: 'my.origin.com'
+            value: 'my.origin.example'
 ```
 
 ### 3.3 Routing requests to different backends based on query parameters
@@ -455,7 +455,7 @@ rules:
 rules:
   - description: Rule to route requests with a specific query parameter to a separate backend
     domains:
-      - www.mydomain.com
+      - www.domain.example
     matches:
       all:
         - query:
@@ -464,15 +464,15 @@ rules:
               - True
     actions:
       backend:
-        origin: https://special.origin.com
+        origin: https://special.origin.example
       header_southbound:
         - set:
             field: 'Host'
-            value: 'special.origin.com'
+            value: 'special.origin.example'
 
   - description: Rule to route requests without a specific query parameter to another backend
     domains:
-      - www.mydomain.com
+      - www.domain.example
     matches:
       all:
         - query:
@@ -480,42 +480,42 @@ rules:
             exist: False
     actions:
       backend:
-        origin: https://other.origin.com
+        origin: https://other.origin.example
       header_southbound:
         - set:
             field: 'Host'
-            value: 'other.origin.com'
+            value: 'other.origin.example'
 ```
 
 ### 3.4 Redirecting requests to a single URL
 
 ```
 rules:
-  - description: Redirect www.mydomain.com to www.redirect-domain.com using https
+  - description: Redirect www.domain.example to www.redirect-domain.example using https
     domains:
-      - www.mydomain.com
+      - www.domain.example
     domain_default: True
     actions:
       redirect:
         type: temporary
         scheme: https
-        domain: www.redirect-domain.com
+        domain: www.redirect-domain.example
 ```
 
 ### 3.5 Redirecting requests and rewriting the request path
 
 ```
 rules:
-  - description: Redirect mydomain.com/<path> to www.redirect-domain.com/newlocation/<path>
+  - description: Redirect domain.example/<path> to www.redirect-domain.example/newlocation/<path>
     domains:
-      - mydomain.com
-      - www.mydomain.com
+      - domain.example
+      - www.domain.example
     domain_default: True
     actions:
       redirect:
         type: temporary
         scheme: https
-        domain: www.redirect-domain.com
+        domain: www.redirect-domain.example
         path:
           - prefix:
               add: /newlocation
