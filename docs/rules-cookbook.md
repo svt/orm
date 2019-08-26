@@ -275,7 +275,7 @@ Rewrite a path based on regular expression matching:
           to_regsub: '/\1'
 ```
 
-The above actually removes a the prefix '/some/path' from the path, which can also be achieved using the `prefix` structure:
+The above actually removes the prefix '/some/path' from the path, which can also be achieved using the `prefix` structure:
 
 ```
   actions:
@@ -348,7 +348,7 @@ Temporary (HTTP 307) redirect of all matching requests to a new domain:
 			domain: www.redirectdomain.com
 ```
 
-Permament (HTTP 308) redirect of the same type, but redirect to HTTP specifically:
+Permanent (HTTP 308) redirect of the same type, but redirect to HTTP specifically:
 
 ```
   actions:
