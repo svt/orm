@@ -343,28 +343,28 @@ Temporary (HTTP 307) redirect of all matching requests to a new domain:
 
 ```
   actions:
-	  redirect:
-		  type: temporary
-			domain: www.redirectdomain.com
+    redirect:
+      type: temporary
+      domain: www.redirectdomain.com
 ```
 
 Permanent (HTTP 308) redirect of the same type, but redirect to HTTP specifically:
 
 ```
   actions:
-	  redirect:
-		  type: permament
-			scheme: http
-			domain: www.redirectdomain.com
+    redirect:
+      type: permament
+      scheme: http
+      domain: www.redirectdomain.com
 ```
 
 Temporary (HTTP 307) redirect of all matching requests to a specific url:
 
 ```
   actions:
-	  redirect:
-		  type: temporary
-			url: https://www.redirectdomain.com/redirected/
+    redirect:
+      type: temporary
+      url: https://www.redirectdomain.com/redirected/
 ```
 
 #### 2.3.2 Redirection with rewriting
@@ -373,13 +373,13 @@ Temporarily redirect matching requests to a new domain using HTTPS and adjust th
 
 ```
   actions:
-	  redirect:
-		  type: temporary
-			scheme: https
-			domain: www.redirectdomain.com
-	    path:
-			  - prefix:
-					  add: /redirected
+    redirect:
+      type: temporary
+      scheme: https
+      domain: www.redirectdomain.com
+    path:
+      - prefix:
+          add: /redirected
 ```
 
 ## 3. Complete examples
@@ -424,13 +424,13 @@ rules:
 ```
 rules:
   - description: Domain default rule that redirects requests that do not match any other rule
-		domains:
-		  - www.mydomain.com
+    domains:
+      - www.mydomain.com
     domain_default: True
-		actions:
-		  redirect:
-			  type: permanent
-				url: https://my.redirect.url
+    actions:
+      redirect:
+        type: permanent
+        url: https://my.redirect.url
 
   - description: Rule to route requests to a certain path to a backend
     domains:
@@ -458,7 +458,7 @@ rules:
       - www.mydomain.com
     matches:
       all:
-			  - query:
+        - query:
             parameter: special
             exact:
               - True
@@ -470,12 +470,12 @@ rules:
             field: 'Host'
             value: 'special.origin.com'
 
-	- description: Rule to route requests without a specific query parameter to another backend
+  - description: Rule to route requests without a specific query parameter to another backend
     domains:
       - www.mydomain.com
     matches:
       all:
-			  - query:
+        - query:
             parameter: special
             exist: False
     actions:
