@@ -335,9 +335,9 @@ Removing a header sent by the origin that should not reach the client:
       - remove: 'X-Robots-Tag'
 ```
 
-## 4. Redirecting
+### 2.3. Redirecting
 
-### 4.1 Simple redirection
+#### 2.3.1 Simple redirection
 
 Temporary (HTTP 307) redirect of all matching requests to a new domain:
 
@@ -367,7 +367,7 @@ Temporary (HTTP 307) redirect of all matching requests to a specific url:
 			url: https://www.redirectdomain.com/redirected/
 ```
 
-### 4.2 Redirection with rewriting
+#### 2.3.2 Redirection with rewriting
 
 Temporarily redirect matching requests to a new domain using HTTPS and adjust the path:
 
