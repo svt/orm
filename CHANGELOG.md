@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.2] - 2019-08-27
 
-- Fix log format for external ORM listener
+### Added
 - Extended documentation (rule examples)
+
+### Changed
+- Fix log format for external ORM listener
 
 ## [1.1.1] - 2019-05-28
 
