@@ -21,7 +21,7 @@ To route requests to `www.example.com` with a path beginning with `/example` (e.
 ```yaml
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Rule for requests to www.example.com/example

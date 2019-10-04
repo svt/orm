@@ -1,6 +1,6 @@
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Test header_southbound set'
@@ -57,7 +57,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Test header_southbound add'
@@ -93,7 +93,7 @@ tests:
         - regex: 'header=BEST-HEADER: BEST-VALUE\r\n'
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Test header_southbound remove'

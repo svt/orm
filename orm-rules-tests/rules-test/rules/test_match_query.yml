@@ -1,6 +1,6 @@
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Test match query begins_with
@@ -42,7 +42,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Test match query ends_with
@@ -84,7 +84,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Test match query contains
@@ -142,7 +142,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Test match query exact
@@ -176,7 +176,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Test match query regex

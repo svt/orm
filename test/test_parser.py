@@ -104,7 +104,7 @@ class ParseRulesTest(unittest.TestCase):
         rule_bar.update(domains)
         tests = ['yeah', 'ooo']
         yml_doc = {
-            'schema_version': 1,
+            'schema_version': 2,
             'rules': [domains.copy(), domains.copy()],
             'tests': tests
         }
@@ -133,7 +133,7 @@ class ParseRulesTest(unittest.TestCase):
         rule_bar.update(both_domains)
         rule_baz.update(other_domain)
         yml_doc = {
-            'schema_version': 1,
+            'schema_version': 2,
             'rules': [rule_foo.copy(), rule_bar.copy(), rule_baz.copy()]
         }
         exp_parsed_doc = {

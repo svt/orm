@@ -1,6 +1,6 @@
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Test trailing_slash default (do nothing)
@@ -35,7 +35,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Test trailing_slash add
@@ -88,7 +88,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Test trailing_slash remove

@@ -4,10 +4,10 @@ There are two types of configuration files for ORM, [globals](#orm-globals) and 
 
 *integer*
 
-The ORM schema version used in this YAML document. Currently `1`. The globals schema is specified in [globals-1.json](../orm/schemas/globals-1.json) and the rules schema is specified in [rules-1.json](../orm/schemas/rules-1.json). For a complete reference of all ORM schema versions, refer to the ORM project's [schemata](../orm/schemas/) folder.
+The ORM schema version used in this YAML document. The globals schema is specified in [globals-1.json](../orm/schemas/globals-1.json) (currently `1`) and the rules schema is specified in [rules-2.json](../orm/schemas/rules-2.json) (currently `2`). For a complete reference of all ORM schema versions, refer to the ORM project's [schemata](../orm/schemas/) folder.
  For all supported versions and their schemata, see [schemas.py](../orm/schemas.py).
 
-Values: `1`
+Values: `1`, `2`
 
 Default: `None`
 
