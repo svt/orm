@@ -64,57 +64,25 @@ def create_match_tree_expr(src, func, inp):
     return {"match": {"source": src, "function": func, "input": inp}}
 
 
-def parse_match_paths(paths_config):
+def parse_match_values(values_config, value_type):
     expr_list = []
     match_functions = ["exact", "regex", "begins_with", "ends_with", "contains"]
     options = ["not", "ignore_case"]
-    ignore_case = has_ignore_case(paths_config)
+    ignore_case = has_ignore_case(values_config)
     for match_function in match_functions:
-        if match_function in paths_config:
-            for path in paths_config[match_function]:
-                inp = {"value": path}
+        if match_function in values_config:
+            for value in values_config[match_function]:
+                inp = {"value": value}
                 if ignore_case:
                     inp["ignore_case"] = ignore_case
-                expr_list.append(create_match_tree_expr("path", match_function, inp))
-    for key in paths_config.keys():
+                expr_list.append(
+                    create_match_tree_expr(value_type, match_function, inp)
+                )
+    for key in values_config.keys():
         if key not in match_functions and key not in options:
             raise ORMInternalParserException("ERROR: unhandled key : " + key)
     tree = {"or": expr_list}
-    return {"not": tree} if is_negation(paths_config) else tree
-
-
-def parse_match_query(query_config):
-    expr_list = []
-    match_functions = [
-        "exist",
-        "exact",
-        "regex",
-        "begins_with",
-        "ends_with",
-        "contains",
-    ]
-    options = ["not", "ignore_case", "parameter"]
-    ignore_case = has_ignore_case(query_config)
-    for match_function in match_functions:
-        if match_function in query_config:
-            if match_function == "exist":
-                inp = {"parameter": query_config["parameter"]}
-                if ignore_case:
-                    inp["ignore_case"] = ignore_case
-                expr_list.append(create_match_tree_expr("query", match_function, inp))
-            else:
-                for query in query_config[match_function]:
-                    inp = {"parameter": query_config["parameter"], "value": query}
-                    if ignore_case:
-                        inp["ignore_case"] = ignore_case
-                    expr_list.append(
-                        create_match_tree_expr("query", match_function, inp)
-                    )
-    for key in query_config.keys():
-        if key not in match_functions and key not in options:
-            raise ORMInternalParserException("ERROR: unhandled key in: " + key)
-    tree = {"or": expr_list}
-    return {"not": tree} if is_negation(query_config) else tree
+    return {"not": tree} if is_negation(values_config) else tree
 
 
 def parse_match_binary_operator(operator, expressions):
@@ -130,9 +98,9 @@ def parse_match_binary_operator(operator, expressions):
     expr_list = []
     for expr in expressions:
         if "paths" in expr:
-            expr_list.append(parse_match_paths(expr["paths"]))
+            expr_list.append(parse_match_values(expr["paths"], "path"))
         elif "query" in expr:
-            expr_list.append(parse_match_query(expr["query"]))
+            expr_list.append(parse_match_values(expr["query"], "query"))
         else:
             raise ORMInternalParserException(
                 "ERROR: unhandled key in: " + str(expr.keys())

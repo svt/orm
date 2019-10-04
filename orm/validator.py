@@ -42,7 +42,7 @@ def validate_globals_file(globals_file):
 
 orm_schemas = {"rules": {}, "globals": {}}
 
-orm_schemas["rules"]["1"] = "rules-1.json"
+orm_schemas["rules"]["2"] = "rules-2.json"
 orm_schemas["globals"]["1"] = "globals-1.json"
 
 
@@ -53,9 +53,13 @@ def get_schema(yml_file, yml_doc, schema_type="rules"):
     schema_file = orm_schemas[schema_type].get(schema_version, None)
     if not schema_file:
         raise ORMSchemaException(
-            "ORM doc using unknown schema_version. "
+            "ORM doc using unsupported schema_version. "
             "Found '" + schema_version + "'. "
-            "Supports " + str(list(orm_schemas.keys())) + " (" + yml_file + ")"
+            "Supports "
+            + str(list(orm_schemas[schema_type].keys()))
+            + " ("
+            + yml_file
+            + ")"
         )
     json_file = open(os.path.join(schema_dir, schema_file))
     schema = json.load(json_file)
