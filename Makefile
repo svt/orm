@@ -180,10 +180,10 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 	@echo "Testing rules with globals actions"
 	orm-rules-tests/start_echo_servers.sh
 	$(ENV_PREP_COMMAND) && \
-    orm \
+		orm \
 			-r 'orm-rules-tests/globals-test/rules/**/*.yml' \
 			-G 'orm-rules-tests/globals-test/globals.yml' \
-				--cache-path 'orm-rules-tests/globals-test/cache.pkl' \
+			--cache-path 'orm-rules-tests/globals-test/cache.pkl' \
 			-o out
 	lxd/update-orm-config.sh out
 	orm-rules-tests/wait_for_orm.sh
