@@ -255,16 +255,16 @@ def parse_document(doc):
     where 'rules' is a domain keyed dict containing lists of ORM rules.
     """
 
-    if doc.get("schema_version", 1) == 1:
-        return parse_document_v1(doc)
+    if doc.get("schema_version", 2) == 2:
+        return parse_document_v2(doc)
     else:
         raise ORMInternalParserException(
             "schema_version %s not supported" % doc["schema_version"]
         )
 
 
-def parse_document_v1(doc):
-    """ The document parser for schema version 1 """
+def parse_document_v2(doc):
+    """ The document parser for schema version 2 """
 
     if doc.get("schema_version"):
         del doc["schema_version"]

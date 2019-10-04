@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+
+  "type": "object",
+  "properties": {
+    "schema_version": { "$ref": "common-2.json#/definitions/schema_version" },
+    "rules": {
+      "type": "array",
+      "items": {
+        "$ref": "common-2.json#/definitions/rule_item"
+      }
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "$ref": "common-2.json#/definitions/test_item"
+      }
+    }
+  },
+  "required": ["schema_version", "rules"],
+  "additionalProperties": false
+}
