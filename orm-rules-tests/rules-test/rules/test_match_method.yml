@@ -1,0 +1,224 @@
+---
+
+schema_version: 2
+
+rules:
+  - description: Test match method begins_with
+    domains:
+      - test-method
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/method/begins_with'
+        - method:
+            begins_with:
+              - 'G'
+    actions:
+      synthetic_response: 'match_method_begins_with'
+
+tests:
+  - name: Test match method begins_with exact
+    request:
+      method: G
+      url: 'https://test-method/method/begins_with'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_begins_with'
+
+  - name: Test match method begins_with
+    request:
+      method: GET
+      url: 'https://test-method/method/begins_with'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_begins_with'
+
+  - name: Test match method begins_with wrong
+    request:
+      method: HEAD
+      url: 'https://test-method/method/begins_with'
+    expect:  # no configured backend
+      status: 500
+
+---
+
+schema_version: 2
+
+rules:
+  - description: Test match method ends_with
+    domains:
+      - test-method
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/method/ends_with'
+        - method:
+            ends_with:
+              - ET
+    actions:
+      synthetic_response: 'match_method_ends_with'
+
+tests:
+  - name: Test match method ends_with exact
+    request:
+      method: ET
+      url: 'https://test-method/method/ends_with'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_ends_with'
+
+  - name: Test match method ends_with
+    request:
+      method: GET
+      url: 'https://test-method/method/ends_with'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_ends_with'
+
+  - name: Test match method ends_with wrong
+    request:
+      method: HEAD
+      url: 'https://test-method/method/ends_with'
+    expect:  # no configured backend
+      status: 500
+
+---
+
+schema_version: 2
+
+rules:
+  - description: Test match method contains
+    domains:
+      - test-method
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/method/contains'
+        - method:
+            contains:
+              - 'H'
+    actions:
+      synthetic_response: 'match_method_contains'
+
+tests:
+  - name: Test match method contains exact
+    request:
+      method: H
+      url: 'https://test-method/method/contains'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_contains'
+
+  - name: Test match method contains
+    request:
+      method: METHOD
+      url: 'https://test-method/method/contains'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_contains'
+
+  - name: Test match method contains in beginning
+    request:
+      method: HE
+      url: 'https://test-method/method/contains'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_contains'
+
+  - name: Test match method contains in end
+    request:
+      method: PATCH
+      url: 'https://test-method/method/contains'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_contains'
+
+  - name: Test match method contains wrong
+    request:
+      method: GET
+      url: 'https://test-method/method/contains'
+    expect:  # no configured backend
+      status: 500
+
+---
+
+schema_version: 2
+
+rules:
+  - description: Test match method exact
+    domains:
+      - test-method
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/method/exact'
+        - method:
+            exact:
+              - 'GET'
+    actions:
+      synthetic_response: 'match_method_exact'
+
+tests:
+  - name: Test match method exact
+    request:
+      method: GET
+      url: 'https://test-method/method/exact'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_exact'
+
+  - name: Test match method exact wrong
+    request:
+      method: HEAD
+      url: 'https://test-method/method/exact'
+    expect:  # no configured backend
+      status: 500
+
+---
+
+schema_version: 2
+
+rules:
+  - description: Test match method regex
+    domains:
+      - test-method
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/method/regex'
+        - method:
+            regex:
+              - '(GET|POST)'
+    actions:
+      synthetic_response: 'match_method_regex'
+
+tests:
+  - name: Test match method regex
+    request:
+      method: GET
+      url: 'https://test-method/method/regex'
+    expect:
+      status: 200
+      body:
+        - regex: 'match_method_regex'
+
+  - name: Test match method regex wrong
+    request:
+      method: HEAD
+      url: 'https://test-method/method/regex'
+    expect:  # no configured backend
+      status: 500
