@@ -486,8 +486,6 @@ def get_match_fsm(match_tree, match_type, worker_pool=None):
     func = {"handle_condition_list": handle_condition_list}
     if match_type in ("method", "path", "query"):
         func["handle_match"] = handle_match
-    # elif match_type == "query":
-    #     func["handle_match"] = handle_match_query
     else:
         raise ValidateRuleConstraintsException(
             "Handling of match type " + str(match_type) + " not implemented."
@@ -507,10 +505,6 @@ def fsms_collide(one, two):
         and not one["fsms"]["query"].isdisjoint(two["fsms"]["query"])
         and not one["fsms"]["method"].isdisjoint(two["fsms"]["method"])
     )
-
-
-def fsm_collision(one_fsm, two_fsm):
-    return not one_fsm.isdisjoint(two_fsm)
 
 
 def validate_constraints_domain_default(domain_rules):
@@ -549,8 +543,8 @@ def validate_constraints_domain_default(domain_rules):
 
 def validate_constraints_rule_collision(domain_rules, cache_path=None):
     # pylint:disable=too-many-locals,too-many-branches,too-many-statements
-    # Assert all paths are unique (collision check) per domain
-    print("Checking for path collisions...")
+    # Assert all matches are unique (collision check) per domain
+    print("Checking for match collisions...")
     fsm_gen_start = time.time()
     cpu_count = os.cpu_count()
     print("Using a pool of {} workers".format(cpu_count))
@@ -564,7 +558,7 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
             fsm_cache = pickle.load(fsm_cache_file)
     for domain, rules in domain_rules.items():
         for rule in rules:
-            # Create an FSM for each rule's match tree paths
+            # Create an FSM for each match type in each rule's match tree
             if rule.get("domain_default", False):
                 continue
             matches = rule["matches"]
@@ -624,7 +618,7 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
             fsm_two = collision_data["fsm_two"]
             colliding_fsm_cache_keys += [fsm_one["cache_key"], fsm_two["cache_key"]]
             collision_messages.append(
-                "\nFound path collision for domain: {domain}\n"
+                "\nFound collision for domain: {domain}\n"
                 "{first_file} ({first_desc})\n"
                 "collides with\n"
                 "{second_file} ({second_desc})\n".format(
@@ -636,7 +630,7 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
                 )
             )
     print(
-        "Path collision check took: "
+        "Collision check took: "
         + str(round(time.time() - collision_check_start, 2))
         + "s"
     )
