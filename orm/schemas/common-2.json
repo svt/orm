@@ -234,6 +234,13 @@
         "format": "uri-query"
       }
     },
+    "match_method_list": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "http-method"
+      }
+    },
     "match_regex_list": {
       "type": "array",
       "items": {
@@ -287,6 +294,26 @@
       ],
       "additionalProperties": false
     },
+    "match_method": {
+      "type": "object",
+      "properties": {
+        "begins_with": {"$ref": "#/definitions/match_method_list"},
+        "ends_with": {"$ref": "#/definitions/match_method_list"},
+        "contains": {"$ref": "#/definitions/match_method_list"},
+        "exact": {"$ref": "#/definitions/match_method_list"},
+        "regex": {"$ref": "#/definitions/match_regex_list"},
+        "not": {"$ref": "#/definitions/match_negate"},
+        "ignore_case": {"$ref": "#/definitions/match_ignore_case"}
+      },
+      "anyOf": [
+        {"required": ["begins_with"]},
+        {"required": ["ends_with"]},
+        {"required": ["contains"]},
+        {"required": ["exact"]},
+        {"required": ["regex"]}
+      ],
+      "additionalProperties": false
+    },
     "boolean_operator": {
       "type": "array",
       "items": {
@@ -299,6 +326,11 @@
         }, {
           "properties": {
             "query": {"$ref": "#/definitions/match_query"}
+          },
+          "additionalProperties": false
+        }, {
+          "properties": {
+            "method": {"$ref": "#/definitions/match_method"}
           },
           "additionalProperties": false
         }]
