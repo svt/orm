@@ -408,7 +408,16 @@ def fsm_action_task(action, fsm1, fsm2):
         )
 
 
-def get_match_path_fsm(match_tree, worker_pool=None):
+def get_all_match_fsms(match_tree, worker_pool=None):
+    fsms = {}
+    for match_type in ("path", "query"):
+        fsms[match_type] = get_match_fsm(
+            match_tree, match_type, worker_pool=worker_pool
+        )
+    return fsms
+
+
+def get_match_fsm(match_tree, match_type, worker_pool=None):
     if worker_pool is None:
         worker_pool = concurrent.futures.ProcessPoolExecutor(max_workers=1)
     alphabet = set(string.printable)
@@ -445,7 +454,7 @@ def get_match_path_fsm(match_tree, worker_pool=None):
         return fsm_future
 
     def handle_match(src, fun, inp, negate):
-        if not src == "path":
+        if src not in ("path", "query"):
             return None
         value = inp["value"]
         lego_regex = value if fun == "regex" else lego_re_escape(value)
@@ -461,20 +470,34 @@ def get_match_path_fsm(match_tree, worker_pool=None):
             regex = lego_regex
         else:
             raise ValidateRuleConstraintsException(
-                "Handling of " "match function " + str(fun) + " not implemented."
+                "Handling of match function " + str(fun) + " not implemented."
             )
         future = worker_pool.submit(fsm_parse_regex_task, regex, negate, alphabet)
         return future
 
-    func = {
-        "handle_condition_list": handle_condition_list,
-        "handle_match": handle_match,
-    }
+    func = {"handle_condition_list": handle_condition_list}
+    if match_type in ("path", "query"):
+        func["handle_match"] = handle_match
+    # elif match_type == "query":
+    #     func["handle_match"] = handle_match_query
+    else:
+        raise ValidateRuleConstraintsException(
+            "Handling of match type " + str(match_type) + " not implemented."
+        )
     fsm_future = parser.traverse_match_tree(func, match_tree)
     if fsm_future is None:
         return lego.parse(".*").to_fsm(alphabet)
     fsm_result = fsm_future.result()
     return fsm_result
+
+
+def fsms_collide(one, two):
+    # TODO: Put the domain under fsms too
+    return (
+        one["domain"] == two["domain"]
+        and not one["fsms"]["path"].isdisjoint(two["fsms"]["path"])
+        and not one["fsms"]["query"].isdisjoint(two["fsms"]["query"])
+    )
 
 
 def fsm_collision(one_fsm, two_fsm):
@@ -542,7 +565,7 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
                 fsm_cache_hits[fsm_cache_key] = fsm_cache.pop(fsm_cache_key)
                 continue
             future = admin_pool.submit(
-                get_match_path_fsm, match_tree, worker_pool=worker_pool
+                get_all_match_fsms, match_tree, worker_pool=worker_pool
             )
             fsm_futures[future] = {
                 "desc": rule["description"],
@@ -554,9 +577,9 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
     fsm_cache = fsm_cache_hits
     rule_fsm_list = []
     for fsm_future in concurrent.futures.as_completed(fsm_futures):
-        fsm = fsm_future.result()
+        fsms = fsm_future.result()
         fsm_entry = fsm_futures[fsm_future]
-        fsm_entry["fsm"] = fsm
+        fsm_entry["fsms"] = fsms
         print("Generated FSM for " + fsm_entry["file"] + ": " + fsm_entry["desc"])
         rule_fsm_list.append(fsm_entry)
 
@@ -575,20 +598,14 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
         j = i + 1
         while j < len(rule_fsm_list):
             fsm_two = rule_fsm_list[j]
-            if fsm_one["domain"] == fsm_two["domain"]:
-                future = worker_pool.submit(
-                    fsm_collision, fsm_one["fsm"], fsm_two["fsm"]
-                )
-                collision_futures[future] = {"fsm_one": fsm_one, "fsm_two": fsm_two}
+            future = worker_pool.submit(fsms_collide, fsm_one, fsm_two)
+            collision_futures[future] = {"fsm_one": fsm_one, "fsm_two": fsm_two}
             j += 1
         # Then check the new FSM:s against the cached FSM:s
         for cache_key in fsm_cache:
             fsm_two = fsm_cache[cache_key]
-            if fsm_one["domain"] == fsm_two["domain"]:
-                future = worker_pool.submit(
-                    fsm_collision, fsm_one["fsm"], fsm_two["fsm"]
-                )
-                collision_futures[future] = {"fsm_one": fsm_one, "fsm_two": fsm_two}
+            future = worker_pool.submit(fsms_collide, fsm_one, fsm_two)
+            collision_futures[future] = {"fsm_one": fsm_one, "fsm_two": fsm_two}
     collision_messages = []
     colliding_fsm_cache_keys = []
     for collision_future in concurrent.futures.as_completed(collision_futures):
