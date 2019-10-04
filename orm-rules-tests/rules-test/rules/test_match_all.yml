@@ -12,9 +12,8 @@ rules:
             exact:
               - '/all/foo'
         - query:
-            parameter: 'match'
             exact:
-              - 'me'
+              - 'match=me'
     actions:
       synthetic_response: 'match_all'
 
