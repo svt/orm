@@ -78,27 +78,26 @@ class RenderVarnishTest(unittest.TestCase):
         self.assertNotEqual(name1, name2)
 
     def test_make_match_path(self):
-        inp = re.sub('\n|\r|\v|\f', '', string.printable)
         with self.assertRaises(ORMInternalRenderException):
             self.render.make_match_path('unsupported_match_function',
                                         {'value': 'derp'})
+        value = re.sub('\n|\r|\v|\f', '', string.printable)
+        inp = {'value': value}
         allowed_pattern = re.compile(r'^variable\.get\("path"\) ~ {?".*"}?$')
         for function in ['regex', 'exact', 'begins_with', 'ends_with',
                          'contains']:
-            match = self.render.make_match_path(function, {'value': inp})
+            match = self.render.make_match_path(function, inp)
             self.assertIsInstance(match, str)
             self.assertIsNotNone(re.search(allowed_pattern, match))
 
     def test_make_match_query(self):
-        param = re.sub('\n|\r|\v|\f', '', string.printable)
-        value = re.sub('\n|\r|\v|\f', '', string.printable)
-        inp = {'parameter': param,
-               'value': value}
         with self.assertRaises(ORMInternalRenderException):
             self.render.make_match_path('unsupported_match_function',
                                         {'value': 'derp'})
+        value = re.sub('\n|\r|\v|\f', '', string.printable)
+        inp = {'value': value}
         allowed_pattern = re.compile(r'^variable\.get\("query"\) ~ {?".*"}?$')
-        for function in ['exist', 'regex', 'exact', 'begins_with', 'ends_with',
+        for function in ['regex', 'exact', 'begins_with', 'ends_with',
                          'contains']:
             match = self.render.make_match_query(function, inp)
             self.assertIsInstance(match, str)
