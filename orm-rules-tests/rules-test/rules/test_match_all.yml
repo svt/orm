@@ -1,6 +1,6 @@
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Test match all
@@ -12,9 +12,8 @@ rules:
             exact:
               - '/all/foo'
         - query:
-            parameter: 'match'
             exact:
-              - 'me'
+              - 'match=me'
     actions:
       synthetic_response: 'match_all'
 

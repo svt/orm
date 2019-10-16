@@ -1,6 +1,6 @@
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Test advanced match not'
@@ -18,9 +18,9 @@ rules:
             contains:
               - 'wrongo'
         - query:
-            parameter: bad_param
             not: True
-            exist: True
+            exact:
+              - 'bad_param=present'
       any:
         - paths:
             contains:
@@ -28,10 +28,8 @@ rules:
               - 'or_have_this'
         - query:
             not: True
-            parameter: color
-            contains:
-              - red
-              - blue
+            exact:
+              - 'color=red'
     actions:
       synthetic_response: 'advanced_match'
 
@@ -111,7 +109,7 @@ tests:
   # Not satisfying any of the match any
   - name: 'Test advanced match not 5 wrong'
     request:
-      url: 'https://test/advanced_match/?color=blue&color=red'
+      url: 'https://test/advanced_match/?color=red'
     expect:  # domain_default backend
       status: 200
       body:

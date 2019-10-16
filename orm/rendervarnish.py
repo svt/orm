@@ -41,66 +41,7 @@ def make_vcl_match_variable_defined(rule_id):
     return "variable.defined(" + vcl_safe_string("match_" + rule_id) + ")"
 
 
-def make_vcl_query_regex(inp, match_function, ignore_case):
-    reg_query_beg = "(^|&)"
-    reg_query_param_end = "(=|&|$)"
-    reg_query_end = "(&|$)"
-    reg_query_wc = r"[^&]*"
-    regex = None
-    esc_param = vcl_escape_string_to_regex(inp["parameter"])
-    if match_function == "exist":
-        regex = reg_query_beg + esc_param + reg_query_param_end
-    else:
-        value = inp["value"]
-        if match_function == "regex":
-            regex = (
-                reg_query_beg
-                + esc_param
-                + "="
-                + vcl_escape_regex(value)
-                + reg_query_end
-            )
-        else:
-            esc_value = vcl_escape_string_to_regex(value)
-            if match_function == "exact":
-                regex = reg_query_beg + esc_param + "=" + esc_value + reg_query_end
-            elif match_function == "begins_with":
-                regex = (
-                    reg_query_beg
-                    + esc_param
-                    + "="
-                    + esc_value
-                    + reg_query_wc
-                    + reg_query_end
-                )
-            elif match_function == "ends_with":
-                regex = (
-                    reg_query_beg
-                    + esc_param
-                    + "="
-                    + reg_query_wc
-                    + esc_value
-                    + reg_query_end
-                )
-            elif match_function == "contains":
-                regex = (
-                    reg_query_beg
-                    + esc_param
-                    + "="
-                    + reg_query_wc
-                    + esc_value
-                    + reg_query_wc
-                    + reg_query_end
-                )
-    if regex is None:
-        raise ORMInternalRenderException(
-            "ERROR: unhandled query match "
-            "function: " + match_function + ":" + str(inp)
-        )
-    return vcl_regex_add_opts(regex, ignore_case)
-
-
-def make_vcl_path_regex(value, match_function, ignore_case):
+def make_vcl_value_regex(value_type, value, match_function, ignore_case):
     regex = None
     if match_function == "regex":
         regex = "^{}$".format(vcl_escape_regex(value))
@@ -116,7 +57,7 @@ def make_vcl_path_regex(value, match_function, ignore_case):
             regex = "^.*{}.*$".format(escaped_value)
     if regex is None:
         raise ORMInternalRenderException(
-            "ERROR: unhandled path match "
+            "ERROR: unhandled " + value_type + " match "
             "function: " + match_function + ":" + str(value)
         )
     return vcl_regex_add_opts(regex, ignore_case)
@@ -395,13 +336,13 @@ def make_path_replace_action(replace_config, indent_depth=0):
     vcl_regex = None
     vcl_sub = replace_config.get("to", None)
     if "from_regex" in replace_config:
-        vcl_regex = make_vcl_path_regex(
-            replace_config["from_regex"], "regex", ignore_case
+        vcl_regex = make_vcl_value_regex(
+            "path", replace_config["from_regex"], "regex", ignore_case
         )
         vcl_sub = replace_config.get("to_regsub", vcl_sub)
     elif "from_exact" in replace_config:
-        vcl_regex = make_vcl_path_regex(
-            replace_config["from_exact"], "exact", ignore_case
+        vcl_regex = make_vcl_value_regex(
+            "path", replace_config["from_exact"], "exact", ignore_case
         )
     if vcl_sub is None or vcl_regex is None:
         raise ORMInternalRenderException(
@@ -435,12 +376,13 @@ class RenderVarnish(RenderOutput):
     def make_match_path(self, fun, inp):
         value = inp["value"]
         ignore_case = inp.get("ignore_case", False)
-        vcl_regex = make_vcl_path_regex(value, fun, ignore_case)
+        vcl_regex = make_vcl_value_regex("path", value, fun, ignore_case)
         return 'variable.get("path") ~ ' + vcl_safe_string(vcl_regex)
 
     def make_match_query(self, fun, inp):
+        value = inp["value"]
         ignore_case = inp.get("ignore_case", False)
-        vcl_regex = make_vcl_query_regex(inp, fun, ignore_case)
+        vcl_regex = make_vcl_value_regex("query", value, fun, ignore_case)
         return 'variable.get("query") ~ ' + vcl_safe_string(vcl_regex)
 
     def make_match_domain(self, fun, inp):
