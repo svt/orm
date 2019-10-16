@@ -1,6 +1,6 @@
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Test req_path replace from_exact to string'
@@ -30,7 +30,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Test req_path replace from_regex to string'
@@ -60,7 +60,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Test req_path replace from_regex to_regsub'
@@ -96,7 +96,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Test req_path replace ignore_case true'
@@ -127,7 +127,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Test req_path replace ignore_case false'

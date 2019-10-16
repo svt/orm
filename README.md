@@ -15,7 +15,7 @@ ORM manages routing configuration based on rules defined in yaml format. It uses
 ```yaml
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: Rule for requests to www.example.com/example

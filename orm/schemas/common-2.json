@@ -1,0 +1,418 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+
+  "definitions": {
+    "schema_version": {
+      "type": "integer"
+    },
+    "http_header_field_name": {
+      "type": "string",
+      "format": "http-header-field-name"
+    },
+    "header": {
+      "type": "object",
+      "properties": {
+        "field": {"$ref": "#/definitions/http_header_field_name"},
+        "value": {
+          "type": "string",
+          "format": "http-header-field-value"
+        }
+      },
+      "required": ["field", "value"],
+      "additionalProperties": false
+    },
+    "header_mod": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [{
+          "properties": {
+            "set": {"$ref": "#/definitions/header"}
+          },
+          "additionalProperties": false
+        }, {
+          "properties": {
+            "add": {"$ref": "#/definitions/header"}
+          },
+          "additionalProperties": false
+        }, {
+          "properties": {
+            "remove": {
+              "$ref": "#/definitions/http_header_field_name"
+            }
+          },
+          "additionalProperties": false
+        }]
+      }
+    },
+    "string_replace": {
+      "type": "object",
+      "properties": {
+        "replace": {
+          "type": "object",
+          "properties": {
+            "ignore_case": {
+              "$ref": "#/definitions/match_ignore_case"
+            },
+            "from_regex": {
+              "type": "string",
+              "format": "orm_regex"
+            },
+            "from_exact": {
+              "type": "string",
+              "format": "uri-path"
+            },
+            "to": {
+              "type": "string",
+              "format": "uri-path"
+            },
+            "to_regsub": {
+              "type": "string",
+              "format": "orm_regsub"
+            }
+          },
+          "oneOf": [{
+            "required": ["from_regex"],
+            "oneOf": [{
+              "required": ["to_regsub"]
+            }, {
+              "required": ["to"]
+            }],
+            "not": {
+              "required": ["from_exact"]
+            }
+          }, {
+            "required": ["from_exact", "to"],
+            "not": {
+              "required": ["from_regex", "to_regsub"]
+            }
+          }],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "string_prefix": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+          "type": "object",
+          "properties": {
+            "ignore_case": {
+              "$ref": "#/definitions/match_ignore_case"
+            },
+            "remove": {
+              "type": "string",
+              "format": "uri-path"
+            },
+            "add": {
+              "type": "string",
+              "format": "uri-path"
+            }
+          },
+          "anyOf": [{
+            "required": ["remove"]
+          }, {
+            "required": ["add"]
+          }],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "path_mod": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {"$ref": "#definitions/string_replace"},
+          {"$ref": "#definitions/string_prefix"}
+        ]
+      }
+    },
+    "redirect-type": {
+      "type": "string",
+      "enum": [
+        "permanent",
+        "temporary",
+        "permanent_allow_method_change",
+        "temporary_allow_method_change"
+      ]
+    },
+    "redirect": {
+      "type": "object",
+      "oneOf": [{
+        "properties": {
+          "type": {"$ref": "#definitions/redirect-type"},
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["type", "url"],
+        "additionalProperties": false
+      }, {
+        "properties": {
+          "type": {"$ref": "#definitions/redirect-type"},
+          "scheme": {
+            "type": "string",
+            "enum": ["http", "https"]
+          },
+          "domain": {
+            "type": "string",
+            "format": "hostname"
+          },
+          "path": {"$ref": "#/definitions/path_mod"}
+        },
+        "allOf": [{
+          "required": ["type"]
+        }, {
+          "anyOf": [{
+            "required": ["scheme"]
+          }, {
+            "required": ["domain"]
+          }, {
+            "required": ["path"]
+          }]
+        }],
+        "additionalProperties": false
+      }]
+    },
+    "backend": {
+      "type": "object",
+      "oneOf": [{
+        "properties": {
+          "servers": {
+            "type": "array",
+            "items": {
+              "oneOf": [{
+                "type": "string",
+                "format": "origin"
+              }, {
+                "type": "object",
+                "properties": {
+                  "server": {
+                    "type": "string",
+                    "format": "origin"
+                  },
+                  "max_connections": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "max_queued_connections": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": ["server"],
+                "additionalProperties": false
+              }]
+            }
+          }
+        },
+        "additionalProperties": false
+      }, {
+        "properties": {
+          "origin": {
+            "type": "string",
+            "format": "origin"
+          }
+        },
+        "additionalProperties": false
+      }]
+    },
+    "match_path_list": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri-path"
+      }
+    },
+    "match_query_list": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri-query"
+      }
+    },
+    "match_regex_list": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "orm_regex"
+      }
+    },
+    "match_negate": {
+      "type": "boolean"
+    },
+    "match_ignore_case": {
+      "type": "boolean"
+    },
+    "match_path": {
+      "type": "object",
+      "properties": {
+        "begins_with": {"$ref": "#/definitions/match_path_list"},
+        "ends_with": {"$ref": "#/definitions/match_path_list"},
+        "contains": {"$ref": "#/definitions/match_path_list"},
+        "exact": {"$ref": "#/definitions/match_path_list"},
+        "regex": {"$ref": "#/definitions/match_regex_list"},
+        "not": {"$ref": "#/definitions/match_negate"},
+        "ignore_case": {"$ref": "#/definitions/match_ignore_case"}
+      },
+      "anyOf": [
+        {"required": ["begins_with"]},
+        {"required": ["ends_with"]},
+        {"required": ["contains"]},
+        {"required": ["exact"]},
+        {"required": ["regex"]}
+      ],
+      "additionalProperties": false
+    },
+    "match_query": {
+      "type": "object",
+      "properties": {
+        "begins_with": {"$ref": "#/definitions/match_query_list"},
+        "ends_with": {"$ref": "#/definitions/match_query_list"},
+        "contains": {"$ref": "#/definitions/match_query_list"},
+        "exact": {"$ref": "#/definitions/match_query_list"},
+        "regex": {"$ref": "#/definitions/match_regex_list"},
+        "not": {"$ref": "#/definitions/match_negate"},
+        "ignore_case": {"$ref": "#/definitions/match_ignore_case"}
+      },
+      "anyOf": [
+        {"required": ["begins_with"]},
+        {"required": ["ends_with"]},
+        {"required": ["contains"]},
+        {"required": ["exact"]},
+        {"required": ["regex"]}
+      ],
+      "additionalProperties": false
+    },
+    "boolean_operator": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [{
+          "properties": {
+            "paths": {"$ref": "#/definitions/match_path"}
+          },
+          "additionalProperties": false
+        }, {
+          "properties": {
+            "query": {"$ref": "#/definitions/match_query"}
+          },
+          "additionalProperties": false
+        }]
+      }
+    },
+    "matches": {
+      "type": "object",
+      "properties": {
+        "all": {"$ref": "#/definitions/boolean_operator"},
+        "any": {"$ref": "#/definitions/boolean_operator"}
+      },
+      "additionalProperties": false
+    },
+    "trailing_slash": {
+      "type": "string",
+      "enum": ["add", "remove", "do_nothing"]
+    },
+    "https_redirection": {
+      "type": "boolean"
+    },
+    "actions": {
+      "type": "object",
+      "oneOf": [{
+        "properties": {
+          "redirect": {"$ref": "#/definitions/redirect"}
+        },
+        "additionalProperties": false
+      }, {
+        "properties": {
+          "trailing_slash": {"$ref": "#/definitions/trailing_slash"},
+          "backend": {"$ref": "#/definitions/backend"},
+          "req_path": {"$ref": "#/definitions/path_mod"},
+          "header_southbound": {"$ref": "#/definitions/header_mod"},
+          "header_northbound": {"$ref": "#/definitions/header_mod"},
+          "https_redirection": {"$ref": "#/definitions/https_redirection"}
+        },
+        "additionalProperties": false
+      }, {
+        "properties": {
+          "synthetic_response": {"type": "string"}
+        },
+        "additionalProperties": false
+      }]
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "hostname"
+      }
+    },
+    "rule_item": {
+      "type": "object",
+      "properties": {
+        "description": {"type": "string"},
+        "domains": {"$ref": "#/definitions/domains"},
+        "domain_default": {"type": "boolean"},
+        "matches": {"$ref": "#/definitions/matches"},
+        "actions": {"$ref": "#/definitions/actions"}
+      },
+      "required": ["domains", "description", "actions"],
+      "oneOf": [{
+        "required": ["matches"]
+      }, {
+        "required": ["domain_default"]
+      }],
+      "additionalProperties": false
+    },
+    "test_item": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "request": {"$ref": "#/definitions/test_request"},
+        "expect": {"$ref": "#/definitions/test_expect"}
+      },
+      "required": ["name", "request", "expect"],
+      "additionalProperties": false
+    },
+    "test_request": {
+      "type": "object",
+      "properties": {
+        "url": {"type": "string", "format": "uri"}
+      },
+      "required": ["url"],
+      "additionalProperties": false
+    },
+    "test_expect": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "regex": {"type": "string", "format": "orm_regex"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "status": {"type": "integer"},
+        "headers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {"$ref": "#/definitions/http_header_field_name"},
+              "regex": {"type": "string", "format": "orm_regex"}
+            },
+            "required": ["field", "regex"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

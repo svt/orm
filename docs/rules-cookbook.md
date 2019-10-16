@@ -93,34 +93,31 @@ Match paths that either match one of a list of exact strings or a regex:
             - '/the/last/exact/path/'
 ```
 
-### 1.2  Query parameter matching
+### 1.2  Query string matching
 
-Match a request based on a specific value for a parameter:
+Match a request based on a specific query string value:
 
 ```
   matches:
     any:
       - query:
-          parameter: my_parameter
           exact:
-            - required_value
+            - 'param=value'
 ```
 
-Match requests on multiple parameters, case-insensitive on the second parameter which can begin with either `foo` or `bar`:
+Match requests on multiple query strings, case-insensitive on the second matching where the query string can begin with either `param=foo` or `other_param=foo`:
 
 ```
   matches:
-    all:
+    any:
       - query:
-          parameter: my_parameter
           exact:
-            - required_value
+            - 'param=value'
       - query:
-          parameter: other_parameter
-          ignore_case: true
           begins_with:
-             - foo
-             - bar
+            - 'param=foo'
+            - 'other_param=bar'
+          ignore_case: true
 ```
 
 ### 1.3  Negative matching
@@ -453,15 +450,14 @@ rules:
 
 ```
 rules:
-  - description: Rule to route requests with a specific query parameter to a separate backend
+  - description: Rule to route requests with a specific query string to a separate backend
     domains:
       - www.domain.example
     matches:
       all:
         - query:
-            parameter: special
             exact:
-              - True
+              - 'special=True'
     actions:
       backend:
         origin: https://special.origin.example
@@ -470,14 +466,15 @@ rules:
             field: 'Host'
             value: 'special.origin.example'
 
-  - description: Rule to route requests without a specific query parameter to another backend
+  - description: Rule to route requests without a specific query string to another backend
     domains:
       - www.domain.example
     matches:
       all:
         - query:
-            parameter: special
-            exist: False
+            not: True
+            exact:
+              - 'special=True'
     actions:
       backend:
         origin: https://other.origin.example

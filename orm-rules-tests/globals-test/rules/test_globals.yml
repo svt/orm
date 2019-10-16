@@ -1,6 +1,6 @@
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Default HTTPS redir'
@@ -27,7 +27,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Global action https_redirection false'
@@ -55,7 +55,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Global actions (req_path, headers)'
@@ -86,7 +86,7 @@ tests:
 
 ---
 
-schema_version: 1
+schema_version: 2
 
 rules:
   - description: 'Global actions override-able'

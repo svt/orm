@@ -91,7 +91,7 @@ class ValidateRulesTest(unittest.TestCase):
                                                   schema_type)
                 self.assertIsInstance(orm_schema, dict)
 
-    def test_get_match_path_fsm(self):
+    def test_get_all_match_fsms(self):
         match_tree = {
             'and': [
                 {'or': [
@@ -116,16 +116,18 @@ class ValidateRulesTest(unittest.TestCase):
                 }}}
             ]
         }
-        fsm_obj = validator.get_match_path_fsm(match_tree)
-        self.assertIsInstance(fsm_obj, fsm)
+        fsm_obj = validator.get_all_match_fsms(match_tree)
+        self.assertIsInstance(fsm_obj, dict)
+        self.assertIsInstance(fsm_obj["path"], fsm)
         # Test match tree without any path matches
         match_tree = {
             'match': {'source': 'domain',
                       'function': 'exact',
                       'input': 'example.com'}
         }
-        fsm_obj = validator.get_match_path_fsm(match_tree)
-        self.assertIsInstance(fsm_obj, fsm)
+        fsm_obj = validator.get_all_match_fsms(match_tree)
+        self.assertIsInstance(fsm_obj, dict)
+        self.assertIsInstance(fsm_obj["path"], fsm)
 
 if __name__ == '__main__':
     unittest.main()

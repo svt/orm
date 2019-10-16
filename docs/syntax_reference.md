@@ -4,10 +4,10 @@ There are two types of configuration files for ORM, [globals](#orm-globals) and 
 
 *integer*
 
-The ORM schema version used in this YAML document. Currently `1`. The globals schema is specified in [globals-1.json](../orm/schemas/globals-1.json) and the rules schema is specified in [rules-1.json](../orm/schemas/rules-1.json). For a complete reference of all ORM schema versions, refer to the ORM project's [schemata](../orm/schemas/) folder.
+The ORM schema version used in this YAML document. The globals schema is specified in [globals-1.json](../orm/schemas/globals-1.json) (currently `1`) and the rules schema is specified in [rules-2.json](../orm/schemas/rules-2.json) (currently `2`). For a complete reference of all ORM schema versions, refer to the ORM project's [schemata](../orm/schemas/) folder.
  For all supported versions and their schemata, see [schemas.py](../orm/schemas.py).
 
-Values: `1`
+Values: `1`, `2`
 
 Default: `None`
 
@@ -134,10 +134,8 @@ To ignore case (i.e. do case insensitive matching), set `ignore_case: True`.
 
 | key         | required | type                        |
 |-------------|:--------:|-----------------------------|
-| parameter   | ✓        | [uri-query](#uri-query)     |
 | ignore_case |          | boolean (default: false)    |
 | not         |          | boolean (default: false)    |
-| exist       | *        | [exist](#exist)             |
 | begins_with | *        | [begins_with](#begins-with) |
 | ends_with   | *        | [ends_with](#ends-with)     |
 | contains    | *        | [contains](#contains)       |
@@ -185,12 +183,6 @@ Equivalent to the [orm-regex](#orm-regex): `string`
 *array of orm_regex*
 
 Satisfied when the input is matched against any of the supplied regular expressions. See [orm-regex](#orm-regex) for reference.
-
-### `exist`
-
-*boolean*
-
-Satisfied when the input exists.
 
 ## Actions
 
