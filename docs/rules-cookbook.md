@@ -1,3 +1,8 @@
+
+# ORM Rule Cookbook
+
+ A collection of ORM rule examples and construction principles
+
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
 - [ORM Rule Cookbook](#orm-rule-cookbook)
@@ -27,15 +32,13 @@
 
 <!-- /TOC -->
 
-# ORM Rule Cookbook
- A collection of ORM rule examples and construction principles
-
 ## 1. Matching
 
 ### 1.1  Path matching strategies
 
 Match paths that begin with either `/secret/` or `/topsecret/`:
-```
+
+```yaml
   matches:
     all:
       - paths:
@@ -44,9 +47,9 @@ Match paths that begin with either `/secret/` or `/topsecret/`:
             - '/topsecret/'
 ```
 
-
 Match paths that end with `.jpg`:
-```
+
+```yaml
   matches:
     all:
       - paths:
@@ -55,7 +58,8 @@ Match paths that end with `.jpg`:
 ```
 
 Match paths that either begin with `/images/` OR end with `.jpg`:
-```
+
+```yaml
   matches:
     any:
       - paths:
@@ -67,7 +71,8 @@ Match paths that either begin with `/images/` OR end with `.jpg`:
 ```
 
 Match paths that begin with `/images/` AND end with `.jpg`:
-```
+
+```yaml
   matches:
     all:
     - paths:
@@ -80,7 +85,7 @@ Match paths that begin with `/images/` AND end with `.jpg`:
 
 Match paths that either match one of a list of exact strings or a regex:
 
-```
+```yaml
   matches:
     any:
       - paths:
@@ -97,7 +102,7 @@ Match paths that either match one of a list of exact strings or a regex:
 
 Match a request based on a specific query string value:
 
-```
+```yaml
   matches:
     any:
       - query:
@@ -107,7 +112,7 @@ Match a request based on a specific query string value:
 
 Match requests on multiple query strings, case-insensitive on the second matching where the query string can begin with either `param=foo` or `other_param=foo`:
 
-```
+```yaml
   matches:
     any:
       - query:
@@ -135,7 +140,8 @@ Match any paths that are NOT the paths `/public/` or `/html/public/`:
 ```
 
 Match any path that does not END with `/public/`:
-```
+
+```yaml
   matches:
     all:
       - paths:
@@ -148,7 +154,7 @@ Match any path that does not END with `/public/`:
 
 Match paths that begin with either `/secret/` or `/topsecret/` EXCEPT the subdirectories `public`:
 
-```
+```yaml
   matches:
     all:
       - paths:
@@ -163,7 +169,8 @@ Match paths that begin with either `/secret/` or `/topsecret/` EXCEPT the subdir
 ```
 
 As above, but using `ends_with` for negative matching instead:
-```
+
+```yaml
   matches:
     all:
       - paths:
@@ -181,7 +188,7 @@ The `matches` directive can only be present in a rule that does *NOT* have the `
 
 Complete rule example:
 
-```
+```yaml
 - description: www.domain.example - domain default
   domains:
     - www.domain.example
@@ -206,7 +213,7 @@ Complete rule example:
 
 Routes all matched requests to the backend at `https://my-backend.domain.example`:
 
-```
+```yaml
   actions:
     backend:
       origin: 'https://my-backend.domain.example'
@@ -216,7 +223,7 @@ Routes all matched requests to the backend at `https://my-backend.domain.example
 
 Spreads the matched requests over two servers:
 
-```
+```yaml
   actions:
     backend:
       servers:
@@ -224,9 +231,9 @@ Spreads the matched requests over two servers:
         - 'https://backend-2.domain.example'
 ```
 
-#### 2.1.3 Multiple backends with custom queue size and connection limits:
+#### 2.1.3 Multiple backends with custom queue size and connection limits
 
-```
+```yaml
   actions:
     backend:
       servers:
@@ -244,7 +251,7 @@ Spreads the matched requests over two servers:
 
 Add a prefix to the request path:
 
-```
+```yaml
   actions:
     req_path:
       - prefix:
@@ -253,7 +260,7 @@ Add a prefix to the request path:
 
 Replace a specific part of a path regardless of case:
 
-```
+```yaml
   actions:
     req_path:
       - replace:
@@ -264,7 +271,7 @@ Replace a specific part of a path regardless of case:
 
 Rewrite a path based on regular expression matching:
 
-```
+```yaml
   actions:
     req_path:
       - replace:
@@ -274,7 +281,7 @@ Rewrite a path based on regular expression matching:
 
 The above actually removes the prefix '/some/path' from the path, which can also be achieved using the `prefix` structure:
 
-```
+```yaml
   actions:
     req_path:
       - prefix:
@@ -287,7 +294,7 @@ When manipulating headers, _southbound_ is the direction of the incoming request
 
 Setting the southbound host header:
 
-```
+```yaml
   actions:
     header_southbound:
       - set:
@@ -297,7 +304,7 @@ Setting the southbound host header:
 
 Adding a southbound header that the backend application requires:
 
-```
+```yaml
   actions:
     header_southbound:
       - add:
@@ -307,7 +314,7 @@ Adding a southbound header that the backend application requires:
 
 Setting various northbound headers for access control:
 
-```
+```yaml
   actions:
     header_northbound:
       - set:
@@ -326,7 +333,7 @@ Setting various northbound headers for access control:
 
 Removing a header sent by the origin that should not reach the client:
 
-```
+```yaml
   actions:
     header_northbound:
       - remove: 'X-Robots-Tag'
@@ -338,7 +345,7 @@ Removing a header sent by the origin that should not reach the client:
 
 Temporary (HTTP 307) redirect of all matching requests to a new domain:
 
-```
+```yaml
   actions:
     redirect:
       type: temporary
@@ -347,7 +354,7 @@ Temporary (HTTP 307) redirect of all matching requests to a new domain:
 
 Permanent (HTTP 308) redirect of the same type, but redirect to HTTP specifically:
 
-```
+```yaml
   actions:
     redirect:
       type: permament
@@ -357,7 +364,7 @@ Permanent (HTTP 308) redirect of the same type, but redirect to HTTP specificall
 
 Temporary (HTTP 307) redirect of all matching requests to a specific url:
 
-```
+```yaml
   actions:
     redirect:
       type: temporary
@@ -368,7 +375,7 @@ Temporary (HTTP 307) redirect of all matching requests to a specific url:
 
 Temporarily redirect matching requests to a new domain using HTTPS and adjust the path:
 
-```
+```yaml
   actions:
     redirect:
       type: temporary
@@ -383,7 +390,7 @@ Temporarily redirect matching requests to a new domain using HTTPS and adjust th
 
 ### 3.1 Routing requests to a single backend and rewriting request headers
 
-```
+```yaml
 rules:
   - description: My production web site
     domains:
@@ -418,7 +425,7 @@ rules:
 
 ### 3.2 Routing requests to certain paths to one backend and redirecting everything else
 
-```
+```yaml
 rules:
   - description: Domain default rule that redirects requests that do not match any other rule
     domains:
@@ -448,7 +455,7 @@ rules:
 
 ### 3.3 Routing requests to different backends based on query parameters
 
-```
+```yaml
 rules:
   - description: Rule to route requests with a specific query string to a separate backend
     domains:
@@ -486,7 +493,7 @@ rules:
 
 ### 3.4 Redirecting requests to a single URL
 
-```
+```yaml
 rules:
   - description: Redirect www.domain.example to www.redirect-domain.example using https
     domains:
@@ -501,7 +508,7 @@ rules:
 
 ### 3.5 Redirecting requests and rewriting the request path
 
-```
+```yaml
 rules:
   - description: Redirect domain.example/<path> to www.redirect-domain.example/newlocation/<path>
     domains:
