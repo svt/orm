@@ -16,6 +16,7 @@ def run_tests(tests, target, verify_certs=True):
     for test in tests:
         print("Run tests from: {}".format(test["_orm_source_file"]))
         name = test.get("name")
+        method = test["request"].get("method", "GET")
         url = test["request"]["url"]
         expect_status = test["expect"].get("status")
         expect_body = test["expect"].get("body", [])
@@ -34,9 +35,13 @@ def run_tests(tests, target, verify_certs=True):
 
         headers = {"Host": url_parsed.netloc}
 
-        print("request.get: {}".format(do_target))
-        r = requests.get(
-            do_target, headers=headers, verify=verify_certs, allow_redirects=False
+        print("request {}: {}".format(method, do_target))
+        r = requests.request(
+            method,
+            do_target,
+            headers=headers,
+            verify=verify_certs,
+            allow_redirects=False,
         )
 
         if expect_status:

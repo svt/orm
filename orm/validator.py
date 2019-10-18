@@ -73,8 +73,16 @@ noncontrol_unicode = r"\u0020-\u007E\u00A0-\uFFFF"
 rfc7230_token = r"0-9a-zA-Z!#$%&\'*+\-.^_`|~"
 rfc7230_vchar = noncontrol_US_ASCII
 
+rfc7230_method = r"^[" + rfc7230_token + "]+$"
+regex_http_method = re.compile(rfc7230_method)
+
 rfc7230_header_field_name = r"^[" + rfc7230_token + "]+$"
 regex_http_header_field_name = re.compile(rfc7230_header_field_name)
+
+
+@FormatChecker.cls_checks("http-method")
+def format_check_http_method_value(instance):
+    return bool(regex_http_method.search(instance))
 
 
 @FormatChecker.cls_checks("http-header-field-name")
@@ -410,7 +418,7 @@ def fsm_action_task(action, fsm1, fsm2):
 
 def get_all_match_fsms(match_tree, worker_pool=None):
     fsms = {}
-    for match_type in ("path", "query"):
+    for match_type in ("method", "path", "query"):
         fsms[match_type] = get_match_fsm(
             match_tree, match_type, worker_pool=worker_pool
         )
@@ -454,7 +462,7 @@ def get_match_fsm(match_tree, match_type, worker_pool=None):
         return fsm_future
 
     def handle_match(src, fun, inp, negate):
-        if src not in ("path", "query"):
+        if src not in ("method", "path", "query"):
             return None
         value = inp["value"]
         lego_regex = value if fun == "regex" else lego_re_escape(value)
@@ -476,10 +484,8 @@ def get_match_fsm(match_tree, match_type, worker_pool=None):
         return future
 
     func = {"handle_condition_list": handle_condition_list}
-    if match_type in ("path", "query"):
+    if match_type in ("method", "path", "query"):
         func["handle_match"] = handle_match
-    # elif match_type == "query":
-    #     func["handle_match"] = handle_match_query
     else:
         raise ValidateRuleConstraintsException(
             "Handling of match type " + str(match_type) + " not implemented."
@@ -497,11 +503,8 @@ def fsms_collide(one, two):
         one["domain"] == two["domain"]
         and not one["fsms"]["path"].isdisjoint(two["fsms"]["path"])
         and not one["fsms"]["query"].isdisjoint(two["fsms"]["query"])
+        and not one["fsms"]["method"].isdisjoint(two["fsms"]["method"])
     )
-
-
-def fsm_collision(one_fsm, two_fsm):
-    return not one_fsm.isdisjoint(two_fsm)
 
 
 def validate_constraints_domain_default(domain_rules):
@@ -540,8 +543,8 @@ def validate_constraints_domain_default(domain_rules):
 
 def validate_constraints_rule_collision(domain_rules, cache_path=None):
     # pylint:disable=too-many-locals,too-many-branches,too-many-statements
-    # Assert all paths are unique (collision check) per domain
-    print("Checking for path collisions...")
+    # Assert all matches are unique (collision check) per domain
+    print("Checking for match collisions...")
     fsm_gen_start = time.time()
     cpu_count = os.cpu_count()
     print("Using a pool of {} workers".format(cpu_count))
@@ -555,7 +558,7 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
             fsm_cache = pickle.load(fsm_cache_file)
     for domain, rules in domain_rules.items():
         for rule in rules:
-            # Create an FSM for each rule's match tree paths
+            # Create an FSM for each match type in each rule's match tree
             if rule.get("domain_default", False):
                 continue
             matches = rule["matches"]
@@ -615,7 +618,7 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
             fsm_two = collision_data["fsm_two"]
             colliding_fsm_cache_keys += [fsm_one["cache_key"], fsm_two["cache_key"]]
             collision_messages.append(
-                "\nFound path collision for domain: {domain}\n"
+                "\nFound collision for domain: {domain}\n"
                 "{first_file} ({first_desc})\n"
                 "collides with\n"
                 "{second_file} ({second_desc})\n".format(
@@ -627,7 +630,7 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
                 )
             )
     print(
-        "Path collision check took: "
+        "Collision check took: "
         + str(round(time.time() - collision_check_start, 2))
         + "s"
     )
