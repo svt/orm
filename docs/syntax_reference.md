@@ -144,6 +144,29 @@ To ignore case (i.e. do case insensitive matching), set `ignore_case: True`.
 
 \* At least one matching function is required. Multiple matching functions are allowed.
 
+### `method`
+
+*object*
+
+Used to match against the HTTP request method using the specified matching function(s).
+
+To negate the specified matching function(s), set `not: True`.
+
+To ignore case (i.e. do case insensitive matching), set `ignore_case: True`.
+
+| key         | required | type                        |
+|-------------|:--------:|-----------------------------|
+| ignore_case |          | boolean (default: false)    |
+| not         |          | boolean (default: false)    |
+| begins_with | *        | [begins_with](#begins-with) |
+| ends_with   | *        | [ends_with](#ends-with)     |
+| contains    | *        | [contains](#contains)       |
+| exact       | *        | [exact](#exact)             |
+| regex       | *        | [regex](#regex)             |
+
+\* At least one matching function is required. Multiple matching functions are allowed.
+
+
 ## Matching functions
 
 ### `begins_with`

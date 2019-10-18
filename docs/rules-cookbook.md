@@ -6,29 +6,30 @@
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
 - [ORM Rule Cookbook](#orm-rule-cookbook)
-	- [1. Matching](#1-matching)
-		- [1.1  Path matching strategies](#11-path-matching-strategies)
-		- [1.2  Query parameter matching](#12-query-parameter-matching)
-		- [1.3  Negative matching](#13-negative-matching)
-		- [1.4  Combining different matching methods](#14-combining-different-matching-methods)
-		- [1.5 `domain_default` matching](#15-domaindefault-matching)
-	- [2. Actions](#2-actions)
-		- [2.1. Routing](#21-routing)
-			- [2.1.1 Routing to a single backend](#211-routing-to-a-single-backend)
-			- [2.1.2 Balancing over multiple backends](#212-balancing-over-multiple-backends)
-			- [2.1.3 Multiple backends with custom queue size and connection limits:](#213-multiple-backends-with-custom-queue-size-and-connection-limits)
-		- [2.2. Rewriting](#22-rewriting)
-			- [2.2.1 Rewriting paths](#221-rewriting-paths)
-			- [2.2.2 Rewriting headers](#222-rewriting-headers)
-		- [2.3. Redirecting](#23-redirecting)
-			- [2.3.1 Simple redirection](#231-simple-redirection)
-			- [2.3.2 Redirection with rewriting](#232-redirection-with-rewriting)
-	- [3. Complete examples](#3-complete-examples)
-		- [3.1 Routing requests to a single backend and rewriting request headers](#31-routing-requests-to-a-single-backend-and-rewriting-request-headers)
-		- [3.2 Routing requests to certain paths to one backend and redirecting everything else](#32-routing-requests-to-certain-paths-to-one-backend-and-redirecting-everything-else)
-		- [3.3 Routing requests to different backends based on query parameters](#33-routing-requests-to-different-backends-based-on-query-parameters)
-		- [3.4 Redirecting requests to a single URL](#34-redirecting-requests-to-a-single-url)
-		- [3.5 Redirecting requests and rewriting the request path](#35-redirecting-requests-and-rewriting-the-request-path)
+  - [1. Matching](#1-matching)
+    - [1.1 Path matching strategies](#11-path-matching-strategies)
+    - [1.2 Query string matching](#12-query-string-matching)
+    - [1.3 HTTP method matching](#13-http-method-matching)
+    - [1.4 Negative matching](#14-negative-matching)
+    - [1.5 Combining different matching methods](#15-combining-different-matching-methods)
+    - [1.6 `domain_default` matching](#16-domaindefault-matching)
+  - [2. Actions](#2-actions)
+    - [2.1. Routing](#21-routing)
+      - [2.1.1 Routing to a single backend](#211-routing-to-a-single-backend)
+      - [2.1.2 Balancing over multiple backends](#212-balancing-over-multiple-backends)
+      - [2.1.3 Multiple backends with custom queue size and connection limits](#213-multiple-backends-with-custom-queue-size-and-connection-limits)
+    - [2.2. Rewriting](#22-rewriting)
+      - [2.2.1 Rewriting paths](#221-rewriting-paths)
+      - [2.2.2 Rewriting headers](#222-rewriting-headers)
+    - [2.3. Redirecting](#23-redirecting)
+      - [2.3.1 Simple redirection](#231-simple-redirection)
+      - [2.3.2 Redirection with rewriting](#232-redirection-with-rewriting)
+  - [3. Complete examples](#3-complete-examples)
+    - [3.1 Routing requests to a single backend and rewriting request headers](#31-routing-requests-to-a-single-backend-and-rewriting-request-headers)
+    - [3.2 Routing requests to certain paths to one backend and redirecting everything else](#32-routing-requests-to-certain-paths-to-one-backend-and-redirecting-everything-else)
+    - [3.3 Routing requests to different backends based on query parameters](#33-routing-requests-to-different-backends-based-on-query-parameters)
+    - [3.4 Redirecting requests to a single URL](#34-redirecting-requests-to-a-single-url)
+    - [3.5 Redirecting requests and rewriting the request path](#35-redirecting-requests-and-rewriting-the-request-path)
 
 <!-- /TOC -->
 
@@ -125,11 +126,36 @@ Match requests on multiple query strings, case-insensitive on the second matchin
           ignore_case: true
 ```
 
-### 1.3  Negative matching
+### 1.3  HTTP method matching
+
+Match requests using the POST method:
+
+```yaml
+  matches:
+    any:
+      - method:
+          exact:
+            - 'POST'
+```
+
+Match GET requests to a specific path:
+
+```yaml
+  matches:
+    all:
+      - method:
+          exact:
+            - 'GET'
+      - paths:
+          begins_with:
+            - '/example/path'
+```
+
+### 1.4  Negative matching
 
 Match any paths that are NOT the paths `/public/` or `/html/public/`:
 
-```
+```yaml
   matches:
     all:
       - paths:
@@ -150,7 +176,7 @@ Match any path that does not END with `/public/`:
             - '/public/'
 ```
 
-### 1.4  Combining different matching methods
+### 1.5  Combining different matching methods
 
 Match paths that begin with either `/secret/` or `/topsecret/` EXCEPT the subdirectories `public`:
 
@@ -182,7 +208,8 @@ As above, but using `ends_with` for negative matching instead:
           ends_with:
             - '/public/'
 ```
-### 1.5 `domain_default` matching
+
+### 1.6 `domain_default` matching
 
 The `matches` directive can only be present in a rule that does *NOT* have the `domain_default` property set, for obvious reasons. A rule that has `domain_default: True` will match any requests to that domain that are not matched by a rule for the same domain that does explicit matching.
 
