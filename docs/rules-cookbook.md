@@ -24,12 +24,14 @@
     - [2.3. Redirecting](#23-redirecting)
       - [2.3.1 Simple redirection](#231-simple-redirection)
       - [2.3.2 Redirection with rewriting](#232-redirection-with-rewriting)
+    - [2.4 Synthetic responses](#24-synthetic-responses)
   - [3. Complete examples](#3-complete-examples)
     - [3.1 Routing requests to a single backend and rewriting request headers](#31-routing-requests-to-a-single-backend-and-rewriting-request-headers)
     - [3.2 Routing requests to certain paths to one backend and redirecting everything else](#32-routing-requests-to-certain-paths-to-one-backend-and-redirecting-everything-else)
     - [3.3 Routing requests to different backends based on query parameters](#33-routing-requests-to-different-backends-based-on-query-parameters)
     - [3.4 Redirecting requests to a single URL](#34-redirecting-requests-to-a-single-url)
     - [3.5 Redirecting requests and rewriting the request path](#35-redirecting-requests-and-rewriting-the-request-path)
+    - [3.6 Generating a synthetic response, i.e. for domain verification](#36-generating-a-synthetic-response-ie-for-domain-verification)
 
 <!-- /TOC -->
 
@@ -413,6 +415,15 @@ Temporarily redirect matching requests to a new domain using HTTPS and adjust th
           add: /redirected
 ```
 
+### 2.4 Synthetic responses
+
+Generating a short synthetic response containing a string:
+
+```yaml
+  actions:
+    synthetic_response: "Synthetic response body"
+```
+
 ## 3. Complete examples
 
 ### 3.1 Routing requests to a single backend and rewriting request headers
@@ -550,4 +561,19 @@ rules:
         path:
           - prefix:
               add: /newlocation
+```
+
+### 3.6 Generating a synthetic response, i.e. for domain verification
+
+```yaml
+rules:
+  - description: Verification challenge response
+    domains:
+      - domain.example
+    matches:
+      any:
+        - paths:
+            exact: /.well-known/domain-verification.txt
+    actions:
+      synthetic_response: "My_verification_data"
 ```

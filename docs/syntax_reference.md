@@ -449,6 +449,16 @@ If set to `do_nothing`, ORM will neither add nor remove trailing slashes from re
 
 *This action will be performed before all other actions except [https_redirection](#https-redirection). If a slash needs to be added or removed, a redirection will be performed without any other action having effect. Note that this also means that when coming back to ORM after the redirect, the request may get matched by another ORM rule than the one with the trailing_slash action.*
 
+### `synthetic_response`
+
+*string*
+
+This action sends a synthetic response with the value of `synthetic response` in the body:
+
+```yaml
+synthetic_response: "Body of synthetic response"
+```
+
 # ORM globals
 
 ORM globals are used to configure ORM deployment specific settings as well as applying global behaviors that affects all ORM rules. There can only be one ORM globals file.
