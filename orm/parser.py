@@ -101,6 +101,8 @@ def parse_match_binary_operator(operator, expressions):
             expr_list.append(parse_match_values(expr["paths"], "path"))
         elif "query" in expr:
             expr_list.append(parse_match_values(expr["query"], "query"))
+        elif "method" in expr:
+            expr_list.append(parse_match_values(expr["method"], "method"))
         else:
             raise ORMInternalParserException(
                 "ERROR: unhandled key in: " + str(expr.keys())

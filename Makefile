@@ -163,14 +163,15 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 	$(ENV_PREP_COMMAND) && \
 		yamllint -c orm-rules-tests/.yamllint orm-rules-tests/
 	@echo "Testing rules without globals actions"
+	mkdir -p out/rules-test
 	orm-rules-tests/start_echo_servers.sh
 	$(ENV_PREP_COMMAND) && \
     orm \
 			-r 'orm-rules-tests/rules-test/rules/**/*.yml' \
 			-G 'orm-rules-tests/rules-test/globals.yml' \
 			--cache-path 'orm-rules-tests/rules-test/cache.pkl' \
-			-o out
-	lxd/update-orm-config.sh out
+			-o out/rules-test
+	lxd/update-orm-config.sh out/rules-test
 	orm-rules-tests/wait_for_orm.sh
 	$(ENV_PREP_COMMAND) && \
 		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/rules/**/*.yml' && \
@@ -178,14 +179,15 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
 
 	@echo "Testing rules with globals actions"
+	mkdir -p out/globals-test
 	orm-rules-tests/start_echo_servers.sh
 	$(ENV_PREP_COMMAND) && \
 		orm \
 			-r 'orm-rules-tests/globals-test/rules/**/*.yml' \
 			-G 'orm-rules-tests/globals-test/globals.yml' \
 			--cache-path 'orm-rules-tests/globals-test/cache.pkl' \
-			-o out
-	lxd/update-orm-config.sh out
+			-o out/globals-test
+	lxd/update-orm-config.sh out/globals-test
 	orm-rules-tests/wait_for_orm.sh
 	$(ENV_PREP_COMMAND) && \
 		lxd/test-orm-config.sh 'orm-rules-tests/globals-test/rules/**/*.yml'

@@ -246,110 +246,65 @@ class ParseRulesTest(unittest.TestCase):
         self.assertEqual(docs, exp_docs)
 
     def test_parse_match_values(self):
-        # value_type path
-        ## Test flattening
-        exp_tree = {
-            'or': [
-                {'match': {
-                    'function': 'exact',
-                    'input': {
-                        'value': 'a'
-                    },
-                    'source': 'path'}},
-                {'match': {
-                    'function': 'exact',
-                    'input': {
-                        'value': 'b'
-                    },
-                    'source': 'path'}},
-                {'match': {
-                    'function': 'regex',
-                    'input': {
-                        'value': 'c'
-                    },
-                    'source': 'path'}},
-                {'match': {
-                    'function': 'regex',
-                    'input': {
-                        'value': 'd'
-                    },
-                    'source': 'path'}}
-            ]
-        }
-        tree = parser.parse_match_values(
-            {
-                'exact': ['a', 'b'],
-                'regex': ['c', 'd'],
-            },
-            "path"
-        )
-        self.assertEqual(tree, exp_tree)
-        ## Test negation
-        exp_tree = {
-            'not': {
+        for value_type in ("path", "query", "method"):
+            ## Test flattening
+            exp_tree = {
                 'or': [
                     {'match': {
                         'function': 'exact',
                         'input': {
                             'value': 'a'
                         },
-                        'source': 'path'}}
-                ]
-            }
-        }
-        tree = parser.parse_match_values(
-            {
-                'exact': ['a'],
-                'not': True
-            }, "path"
-        )
-        self.assertEqual(tree, exp_tree)
-
-        # value_type query
-        ## Test flattening
-        in_conf = {
-            'exact': ['foo=a', 'foo=b'],
-            'regex': ['foo=c', 'foo=d']
-        }
-        exp_tree = {
-            'or': [
-                {'match': {
-                    'function': 'exact',
-                    'input': {'value': 'foo=a'},
-                    'source': 'query'}},
-                {'match': {
-                    'function': 'exact',
-                    'input': {'value': 'foo=b'},
-                    'source': 'query'}},
-                {'match': {
-                    'function': 'regex',
-                    'input': {'value': 'foo=c'},
-                    'source': 'query'}},
-                {'match': {
-                    'function': 'regex',
-                    'input': {'value': 'foo=d'},
-                    'source': 'query'}}
-            ]
-        }
-        tree = parser.parse_match_values(in_conf, "query")
-        self.assertEqual(tree, exp_tree)
-        ## Test negation
-        in_conf = {
-            'exact': ['foo=a'],
-            'not': True
-        }
-        exp_tree = {
-            'not': {
-                'or': [
+                        'source': value_type}},
                     {'match': {
                         'function': 'exact',
-                        'input': {'value': 'foo=a'},
-                        'source': 'query'}}
+                        'input': {
+                            'value': 'b'
+                        },
+                        'source': value_type}},
+                    {'match': {
+                        'function': 'regex',
+                        'input': {
+                            'value': 'c'
+                        },
+                        'source': value_type}},
+                    {'match': {
+                        'function': 'regex',
+                        'input': {
+                            'value': 'd'
+                        },
+                        'source': value_type}}
                 ]
             }
-        }
-        tree = parser.parse_match_values(in_conf, "query")
-        self.assertEqual(tree, exp_tree)
+            tree = parser.parse_match_values(
+                {
+                    'exact': ['a', 'b'],
+                    'regex': ['c', 'd'],
+                },
+                value_type
+            )
+            self.assertEqual(tree, exp_tree)
+            ## Test negation
+            exp_tree = {
+                'not': {
+                    'or': [
+                        {'match': {
+                            'function': 'exact',
+                            'input': {
+                                'value': 'a'
+                            },
+                            'source': value_type}}
+                    ]
+                }
+            }
+            tree = parser.parse_match_values(
+                {
+                    'exact': ['a'],
+                    'not': True
+                },
+                value_type
+            )
+            self.assertEqual(tree, exp_tree)
 
     def test_parse_match_binary_operator(self):
         # OR
