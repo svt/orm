@@ -1,41 +1,47 @@
+
+# ORM Rule Cookbook
+
+ A collection of ORM rule examples and construction principles
+
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
 - [ORM Rule Cookbook](#orm-rule-cookbook)
-	- [1. Matching](#1-matching)
-		- [1.1  Path matching strategies](#11-path-matching-strategies)
-		- [1.2  Query parameter matching](#12-query-parameter-matching)
-		- [1.3  Negative matching](#13-negative-matching)
-		- [1.4  Combining different matching methods](#14-combining-different-matching-methods)
-		- [1.5 `domain_default` matching](#15-domaindefault-matching)
-	- [2. Actions](#2-actions)
-		- [2.1. Routing](#21-routing)
-			- [2.1.1 Routing to a single backend](#211-routing-to-a-single-backend)
-			- [2.1.2 Balancing over multiple backends](#212-balancing-over-multiple-backends)
-			- [2.1.3 Multiple backends with custom queue size and connection limits:](#213-multiple-backends-with-custom-queue-size-and-connection-limits)
-		- [2.2. Rewriting](#22-rewriting)
-			- [2.2.1 Rewriting paths](#221-rewriting-paths)
-			- [2.2.2 Rewriting headers](#222-rewriting-headers)
-		- [2.3. Redirecting](#23-redirecting)
-			- [2.3.1 Simple redirection](#231-simple-redirection)
-			- [2.3.2 Redirection with rewriting](#232-redirection-with-rewriting)
-	- [3. Complete examples](#3-complete-examples)
-		- [3.1 Routing requests to a single backend and rewriting request headers](#31-routing-requests-to-a-single-backend-and-rewriting-request-headers)
-		- [3.2 Routing requests to certain paths to one backend and redirecting everything else](#32-routing-requests-to-certain-paths-to-one-backend-and-redirecting-everything-else)
-		- [3.3 Routing requests to different backends based on query parameters](#33-routing-requests-to-different-backends-based-on-query-parameters)
-		- [3.4 Redirecting requests to a single URL](#34-redirecting-requests-to-a-single-url)
-		- [3.5 Redirecting requests and rewriting the request path](#35-redirecting-requests-and-rewriting-the-request-path)
+  - [1. Matching](#1-matching)
+    - [1.1 Path matching strategies](#11-path-matching-strategies)
+    - [1.2 Query string matching](#12-query-string-matching)
+    - [1.3 HTTP method matching](#13-http-method-matching)
+    - [1.4 Negative matching](#14-negative-matching)
+    - [1.5 Combining different matching methods](#15-combining-different-matching-methods)
+    - [1.6 `domain_default` matching](#16-domaindefault-matching)
+  - [2. Actions](#2-actions)
+    - [2.1. Routing](#21-routing)
+      - [2.1.1 Routing to a single backend](#211-routing-to-a-single-backend)
+      - [2.1.2 Balancing over multiple backends](#212-balancing-over-multiple-backends)
+      - [2.1.3 Multiple backends with custom queue size and connection limits](#213-multiple-backends-with-custom-queue-size-and-connection-limits)
+    - [2.2. Rewriting](#22-rewriting)
+      - [2.2.1 Rewriting paths](#221-rewriting-paths)
+      - [2.2.2 Rewriting headers](#222-rewriting-headers)
+    - [2.3. Redirecting](#23-redirecting)
+      - [2.3.1 Simple redirection](#231-simple-redirection)
+      - [2.3.2 Redirection with rewriting](#232-redirection-with-rewriting)
+    - [2.4 Synthetic responses](#24-synthetic-responses)
+  - [3. Complete examples](#3-complete-examples)
+    - [3.1 Routing requests to a single backend and rewriting request headers](#31-routing-requests-to-a-single-backend-and-rewriting-request-headers)
+    - [3.2 Routing requests to certain paths to one backend and redirecting everything else](#32-routing-requests-to-certain-paths-to-one-backend-and-redirecting-everything-else)
+    - [3.3 Routing requests to different backends based on query parameters](#33-routing-requests-to-different-backends-based-on-query-parameters)
+    - [3.4 Redirecting requests to a single URL](#34-redirecting-requests-to-a-single-url)
+    - [3.5 Redirecting requests and rewriting the request path](#35-redirecting-requests-and-rewriting-the-request-path)
+    - [3.6 Generating a synthetic response, i.e. for domain verification](#36-generating-a-synthetic-response-ie-for-domain-verification)
 
 <!-- /TOC -->
-
-# ORM Rule Cookbook
- A collection of ORM rule examples and construction principles
 
 ## 1. Matching
 
 ### 1.1  Path matching strategies
 
 Match paths that begin with either `/secret/` or `/topsecret/`:
-```
+
+```yaml
   matches:
     all:
       - paths:
@@ -44,9 +50,9 @@ Match paths that begin with either `/secret/` or `/topsecret/`:
             - '/topsecret/'
 ```
 
-
 Match paths that end with `.jpg`:
-```
+
+```yaml
   matches:
     all:
       - paths:
@@ -55,7 +61,8 @@ Match paths that end with `.jpg`:
 ```
 
 Match paths that either begin with `/images/` OR end with `.jpg`:
-```
+
+```yaml
   matches:
     any:
       - paths:
@@ -67,7 +74,8 @@ Match paths that either begin with `/images/` OR end with `.jpg`:
 ```
 
 Match paths that begin with `/images/` AND end with `.jpg`:
-```
+
+```yaml
   matches:
     all:
     - paths:
@@ -80,7 +88,7 @@ Match paths that begin with `/images/` AND end with `.jpg`:
 
 Match paths that either match one of a list of exact strings or a regex:
 
-```
+```yaml
   matches:
     any:
       - paths:
@@ -97,7 +105,7 @@ Match paths that either match one of a list of exact strings or a regex:
 
 Match a request based on a specific query string value:
 
-```
+```yaml
   matches:
     any:
       - query:
@@ -107,7 +115,7 @@ Match a request based on a specific query string value:
 
 Match requests on multiple query strings, case-insensitive on the second matching where the query string can begin with either `param=foo` or `other_param=foo`:
 
-```
+```yaml
   matches:
     any:
       - query:
@@ -120,11 +128,36 @@ Match requests on multiple query strings, case-insensitive on the second matchin
           ignore_case: true
 ```
 
-### 1.3  Negative matching
+### 1.3  HTTP method matching
+
+Match requests using the POST method:
+
+```yaml
+  matches:
+    any:
+      - method:
+          exact:
+            - 'POST'
+```
+
+Match GET requests to a specific path:
+
+```yaml
+  matches:
+    all:
+      - method:
+          exact:
+            - 'GET'
+      - paths:
+          begins_with:
+            - '/example/path'
+```
+
+### 1.4  Negative matching
 
 Match any paths that are NOT the paths `/public/` or `/html/public/`:
 
-```
+```yaml
   matches:
     all:
       - paths:
@@ -135,7 +168,8 @@ Match any paths that are NOT the paths `/public/` or `/html/public/`:
 ```
 
 Match any path that does not END with `/public/`:
-```
+
+```yaml
   matches:
     all:
       - paths:
@@ -144,11 +178,11 @@ Match any path that does not END with `/public/`:
             - '/public/'
 ```
 
-### 1.4  Combining different matching methods
+### 1.5  Combining different matching methods
 
 Match paths that begin with either `/secret/` or `/topsecret/` EXCEPT the subdirectories `public`:
 
-```
+```yaml
   matches:
     all:
       - paths:
@@ -163,7 +197,8 @@ Match paths that begin with either `/secret/` or `/topsecret/` EXCEPT the subdir
 ```
 
 As above, but using `ends_with` for negative matching instead:
-```
+
+```yaml
   matches:
     all:
       - paths:
@@ -175,13 +210,14 @@ As above, but using `ends_with` for negative matching instead:
           ends_with:
             - '/public/'
 ```
-### 1.5 `domain_default` matching
+
+### 1.6 `domain_default` matching
 
 The `matches` directive can only be present in a rule that does *NOT* have the `domain_default` property set, for obvious reasons. A rule that has `domain_default: True` will match any requests to that domain that are not matched by a rule for the same domain that does explicit matching.
 
 Complete rule example:
 
-```
+```yaml
 - description: www.domain.example - domain default
   domains:
     - www.domain.example
@@ -206,7 +242,7 @@ Complete rule example:
 
 Routes all matched requests to the backend at `https://my-backend.domain.example`:
 
-```
+```yaml
   actions:
     backend:
       origin: 'https://my-backend.domain.example'
@@ -216,7 +252,7 @@ Routes all matched requests to the backend at `https://my-backend.domain.example
 
 Spreads the matched requests over two servers:
 
-```
+```yaml
   actions:
     backend:
       servers:
@@ -224,9 +260,9 @@ Spreads the matched requests over two servers:
         - 'https://backend-2.domain.example'
 ```
 
-#### 2.1.3 Multiple backends with custom queue size and connection limits:
+#### 2.1.3 Multiple backends with custom queue size and connection limits
 
-```
+```yaml
   actions:
     backend:
       servers:
@@ -244,7 +280,7 @@ Spreads the matched requests over two servers:
 
 Add a prefix to the request path:
 
-```
+```yaml
   actions:
     req_path:
       - prefix:
@@ -253,7 +289,7 @@ Add a prefix to the request path:
 
 Replace a specific part of a path regardless of case:
 
-```
+```yaml
   actions:
     req_path:
       - replace:
@@ -264,7 +300,7 @@ Replace a specific part of a path regardless of case:
 
 Rewrite a path based on regular expression matching:
 
-```
+```yaml
   actions:
     req_path:
       - replace:
@@ -274,7 +310,7 @@ Rewrite a path based on regular expression matching:
 
 The above actually removes the prefix '/some/path' from the path, which can also be achieved using the `prefix` structure:
 
-```
+```yaml
   actions:
     req_path:
       - prefix:
@@ -287,7 +323,7 @@ When manipulating headers, _southbound_ is the direction of the incoming request
 
 Setting the southbound host header:
 
-```
+```yaml
   actions:
     header_southbound:
       - set:
@@ -297,7 +333,7 @@ Setting the southbound host header:
 
 Adding a southbound header that the backend application requires:
 
-```
+```yaml
   actions:
     header_southbound:
       - add:
@@ -307,7 +343,7 @@ Adding a southbound header that the backend application requires:
 
 Setting various northbound headers for access control:
 
-```
+```yaml
   actions:
     header_northbound:
       - set:
@@ -326,7 +362,7 @@ Setting various northbound headers for access control:
 
 Removing a header sent by the origin that should not reach the client:
 
-```
+```yaml
   actions:
     header_northbound:
       - remove: 'X-Robots-Tag'
@@ -338,7 +374,7 @@ Removing a header sent by the origin that should not reach the client:
 
 Temporary (HTTP 307) redirect of all matching requests to a new domain:
 
-```
+```yaml
   actions:
     redirect:
       type: temporary
@@ -347,7 +383,7 @@ Temporary (HTTP 307) redirect of all matching requests to a new domain:
 
 Permanent (HTTP 308) redirect of the same type, but redirect to HTTP specifically:
 
-```
+```yaml
   actions:
     redirect:
       type: permament
@@ -357,7 +393,7 @@ Permanent (HTTP 308) redirect of the same type, but redirect to HTTP specificall
 
 Temporary (HTTP 307) redirect of all matching requests to a specific url:
 
-```
+```yaml
   actions:
     redirect:
       type: temporary
@@ -368,7 +404,7 @@ Temporary (HTTP 307) redirect of all matching requests to a specific url:
 
 Temporarily redirect matching requests to a new domain using HTTPS and adjust the path:
 
-```
+```yaml
   actions:
     redirect:
       type: temporary
@@ -379,11 +415,20 @@ Temporarily redirect matching requests to a new domain using HTTPS and adjust th
           add: /redirected
 ```
 
+### 2.4 Synthetic responses
+
+Generating a short synthetic response containing a string:
+
+```yaml
+  actions:
+    synthetic_response: "Synthetic response body"
+```
+
 ## 3. Complete examples
 
 ### 3.1 Routing requests to a single backend and rewriting request headers
 
-```
+```yaml
 rules:
   - description: My production web site
     domains:
@@ -418,7 +463,7 @@ rules:
 
 ### 3.2 Routing requests to certain paths to one backend and redirecting everything else
 
-```
+```yaml
 rules:
   - description: Domain default rule that redirects requests that do not match any other rule
     domains:
@@ -448,7 +493,7 @@ rules:
 
 ### 3.3 Routing requests to different backends based on query parameters
 
-```
+```yaml
 rules:
   - description: Rule to route requests with a specific query string to a separate backend
     domains:
@@ -486,7 +531,7 @@ rules:
 
 ### 3.4 Redirecting requests to a single URL
 
-```
+```yaml
 rules:
   - description: Redirect www.domain.example to www.redirect-domain.example using https
     domains:
@@ -501,7 +546,7 @@ rules:
 
 ### 3.5 Redirecting requests and rewriting the request path
 
-```
+```yaml
 rules:
   - description: Redirect domain.example/<path> to www.redirect-domain.example/newlocation/<path>
     domains:
@@ -516,4 +561,19 @@ rules:
         path:
           - prefix:
               add: /newlocation
+```
+
+### 3.6 Generating a synthetic response, i.e. for domain verification
+
+```yaml
+rules:
+  - description: Verification challenge response
+    domains:
+      - domain.example
+    matches:
+      any:
+        - paths:
+            exact: /.well-known/domain-verification.txt
+    actions:
+      synthetic_response: "My_verification_data"
 ```
