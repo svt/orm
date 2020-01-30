@@ -410,9 +410,9 @@ Temporarily redirect matching requests to a new domain using HTTPS and adjust th
       type: temporary
       scheme: https
       domain: www.redirectdomain.example
-    path:
-      - prefix:
-          add: /redirected
+      path:
+        - prefix:
+            add: /redirected
 ```
 
 ### 2.4 Synthetic responses

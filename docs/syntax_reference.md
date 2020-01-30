@@ -260,7 +260,7 @@ The above is used to statically specify the redirect location. The `url` can be 
 | type   | ✓        | enum                              |
 | scheme | *        | enum                              |
 | domain | *        | [hostname](#hostname)             |
-| path   | *        | [string_replace](#string_replace) |
+| path   | *        | [req_path](#req_path) |
 
 The above is used to only rewrite one (or more) parts of the URL for the redirect location. The parts not specified will be the same as in the original request. For example if we have:
 
