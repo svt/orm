@@ -1,0 +1,10 @@
+[Unit]
+Description=Slow HTTP server on port %I
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/root/slow_server.py --port %i --name %i
+
+[Install]
+WantedBy=multi-user.target

@@ -42,6 +42,12 @@ class RenderHAProxy(RenderOutput):
             )
             self.backends.append("")
             self.backends.append("backend " + rule_id)
+            if backend_config.get("timeout_server", False):
+                self.backends.append(
+                    "    timeout server {}ms".format(backend_config["timeout_server"])
+                )
+            else:
+                self.backends.append("    timeout server 15s")
         for origin in origins:
             origin_instance = origin
             if isinstance(origin, str):
@@ -69,12 +75,10 @@ class RenderHAProxy(RenderOutput):
                 )
             if origin_instance.get("max_connections", False):
                 server += " maxconn {}".format(origin_instance["max_connections"])
-
             if origin_instance.get("max_queued_connections", False):
                 server += " maxqueue {}".format(
                     origin_instance["max_queued_connections"]
                 )
-
             self.backends.append(server)
 
     def make_actions(self, action_config, rule_id):

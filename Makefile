@@ -28,7 +28,9 @@ PYTHON ?= python3
 env: requirements.txt
 	@echo "This is a local build, I will use virtualenv"
 	virtualenv -p ${PYTHON} env
-	. env/bin/activate && make env-install
+	. env/bin/activate && \
+		python -m pip install pip==19.0.3 && \
+		make env-install
 endif
 
 env-install: requirements.txt
@@ -163,7 +165,7 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 	$(ENV_PREP_COMMAND) && \
 		yamllint -c orm-rules-tests/.yamllint orm-rules-tests/
 	@echo "Testing rules without globals actions"
-	orm-rules-tests/start_echo_servers.sh
+	orm-rules-tests/start_test_servers.sh
 	$(ENV_PREP_COMMAND) && \
     orm \
 			-r 'orm-rules-tests/rules-test/rules/**/*.yml' \
@@ -178,7 +180,7 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
 
 	@echo "Testing rules with globals actions"
-	orm-rules-tests/start_echo_servers.sh
+	orm-rules-tests/start_test_servers.sh
 	$(ENV_PREP_COMMAND) && \
     orm \
 			-r 'orm-rules-tests/globals-test/rules/**/*.yml' \

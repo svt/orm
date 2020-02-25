@@ -264,17 +264,24 @@ Sends the requests to a single origin or loadbalances between multiple servers.
 
 Contains one of the following objects:
 
-| key    | required | type              |
-|--------|:--------:|-------------------|
-| origin | ✓        | [origin](#origin) |
+| key            | required | type                              |
+|----------------|:--------:|-----------------------------------|
+| origin         | ✓        | [origin](#origin)                 |
+| timeout_server |          | [timeout_server](#timeout_server) |
 
-| key     | required | type                       |
-|---------|:--------:|----------------------------|
-| servers | ✓        | array of [origin](#origin) |
+or:
 
-| key     | required | type                                     |
-|---------|:--------:|------------------------------------------|
-| servers | ✓        | array of [origin_object](#origin_object) |
+| key            | required | type                              |
+|----------------|:--------:|-----------------------------------|
+| servers        | ✓        | array of [origin](#origin)        |
+| timeout_server |          | [timeout_server](#timeout_server) |
+
+or:
+
+| key            | required | type                                     |
+|----------------|:--------:|------------------------------------------|
+| servers        | ✓        | array of [origin_object](#origin_object) |
+| timeout_server |          | [timeout_server](#timeout_server)        |
 
 ### `origin_object`
 
@@ -575,6 +582,14 @@ Specify actions that are always performed. The actions are performed before the 
 | header_northbound |          | [header_northbound](#header_southbound-header_northbound) |
 
 # Format types
+
+### timeout_server
+
+*integer*
+
+Sets [backend](#backend) timeout in milliseconds.
+
+Translates into haproxy backend [timeout server](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#4-timeout%20server) parameter
 
 ### max_connections
 

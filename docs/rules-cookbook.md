@@ -241,6 +241,30 @@ Spreads the matched requests over two servers:
           max_queued_connections: 1024
 ```
 
+#### 2.1.4 Backends with server timeout:
+
+Set a 20 seconds server timeout for two servers:
+
+```
+  actions:
+    backend:
+      timeout_server: 20000
+      servers:
+        - 'https://backend-1.domain.example'
+        - 'https://backend-2.domain.example'
+```
+
+Set a 5 seconds server timeout for one backend:
+
+```
+  actions:
+    backend:
+      timeout_server: 20000
+      servers:
+        - 'https://backend-1.domain.example'
+        - 'https://backend-2.domain.example'
+```
+
 ### 2.2. Rewriting
 
 #### 2.2.1 Rewriting paths

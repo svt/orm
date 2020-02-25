@@ -1,0 +1,60 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Test slow backend with default server timeout
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/backend/timeout_server_default'
+    actions:
+      backend:
+        origin: 'http://127.0.0.1:4242'
+
+
+tests:
+  - name: 'Test that server responds'
+    request:
+      url: 'https://test/backend/timeout_server_default?sleep=0'
+    expect:
+      status: 200
+  - name: 'Test that default server timeout strikes (set to 15s in haproxy test config)'
+    request:
+      url: 'https://test/backend/timeout_server_default?sleep=20'
+    expect:
+      status: 504
+
+---
+
+schema_version: 1
+
+rules:
+  - description: Test slow backend with custom server timeout set
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/backend/timeout_server_custom'
+    actions:
+      backend:
+        timeout_server: 20000
+        servers:
+          - server: 'http://127.0.0.1:4242'
+
+tests:
+  - name: 'Test that custom server timeout overrides default'
+    request:
+      url: 'https://test/backend/timeout_server_custom?sleep=17'
+    expect:
+      status: 200
+  - name: 'Test that custom server timeout strikes'
+    request:
+      url: 'https://test/backend/timeout_server_custom?sleep=30'
+    expect:
+      status: 504

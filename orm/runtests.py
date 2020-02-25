@@ -33,7 +33,6 @@ def run_tests(tests, target, verify_certs=True):
             do_target = "{}#{}".format(do_target, url_parsed.fragment)
 
         headers = {"Host": url_parsed.netloc}
-
         print("request.get: {}".format(do_target))
         r = requests.get(
             do_target, headers=headers, verify=verify_certs, allow_redirects=False

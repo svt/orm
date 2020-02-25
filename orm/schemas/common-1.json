@@ -207,8 +207,13 @@
                 "additionalProperties": false
               }]
             }
+          },
+          "timeout_server": {
+            "type": "integer",
+            "minimum": 0
           }
         },
+        "required": ["servers"],
         "additionalProperties": false
       }, {
         "properties": {
