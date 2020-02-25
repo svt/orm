@@ -16,6 +16,7 @@ from jsonschema import Draft4Validator, FormatChecker
 from greenery import lego
 
 import orm.parser as parser
+from orm.constants import TIMEOUT_SERVER_DEFAULT_DEFAULT, TIMEOUT_SERVER_MAX_DEFAULT
 
 
 class ORMSchemaException(Exception):
@@ -26,18 +27,64 @@ class ValidateRuleConstraintsException(Exception):
     pass
 
 
-def validate_rule_files(yml_files, cache_path=None):
+def validate_rule_files(yml_files=None, globals_path=None, cache_path=None):
     valid = True
     for yml_file in yml_files:
         if not validate_rule_schema(yml_file):
             valid = False
     if not valid:
         return False
-    return validate_rule_constraints(yml_files, cache_path=cache_path)
+    return validate_rule_constraints(
+        yml_files=yml_files, globals_path=globals_path, cache_path=cache_path
+    )
 
 
-def validate_globals_file(globals_file):
-    return validate_globals_schema(globals_file)
+def validate_constraints_timeout_server_default(doc):
+    # Assert there is only one domain_default per domain.
+    print("Checking timeout_server_default bounds...")
+    timeout_server_max = doc.get("haproxy", {}).get(
+        "timeout_server_max", TIMEOUT_SERVER_MAX_DEFAULT
+    )
+    timeout_server_default = doc.get("haproxy", {}).get("timeout_server_default", None)
+    if timeout_server_default is None or timeout_server_max == 0:
+        # When timeout_server_default is not set or timeout_server_max is infinite
+        # then we have no bounds for timeout_server_default.
+        return True
+    elif timeout_server_default > timeout_server_max:
+        print(
+            "ERROR: timeout_server_default[{}] > timeout_server_max[{}]\n"
+            "  Since all backend connections go through the `orm_external` "
+            "backend, which has `timeout_server_max` enforced, `timeout_server_default` "
+            "can not be higher than `timeout_server_max`.".format(
+                timeout_server_default, timeout_server_max
+            )
+        )
+        return False
+    elif timeout_server_default == 0:
+        print(
+            "ERROR: timeout_server_default[infinite] > timeout_server_max[{}]\n"
+            "  Since all backend connections go through the `orm_external` "
+            "backend, which has `timeout_server_max` enforced, `timeout_server_default` "
+            "can not be higher than `timeout_server_max`.".format(timeout_server_max)
+        )
+        return False
+    return True
+
+
+def validate_globals_constraints(globals_path):
+    print("Validating additional ORM globals constraints...")
+    globals_doc = parser.parse_globals(globals_path)
+    if not validate_constraints_timeout_server_default(globals_doc):
+        return False
+    return True
+
+
+def validate_globals_file(globals_path):
+    if not validate_globals_schema(globals_path):
+        return False
+    elif not validate_globals_constraints(globals_path):
+        return False
+    return True
 
 
 orm_schemas = {"rules": {}, "globals": {}}
@@ -477,6 +524,42 @@ def fsm_collision(one_fsm, two_fsm):
     return not one_fsm.isdisjoint(two_fsm)
 
 
+def validate_constraints_timeout_server(domain_rules=None, globals_doc=None):
+    # Assert that timeout_server is not out of bounds.
+    print("Checking for timeout_server out of bounds...")
+    haproxy = globals_doc.get("haproxy", {})
+    timeout_server_default = haproxy.get(
+        "timeout_server_default", TIMEOUT_SERVER_DEFAULT_DEFAULT
+    )
+    timeout_server_max = haproxy.get("timeout_server_max", TIMEOUT_SERVER_MAX_DEFAULT)
+    for rules in domain_rules.values():
+        for rule in rules:
+            backend_config = rule.get("actions", {}).get("backend", {})
+            if backend_config:
+                backend_timeout_server = backend_config.get(
+                    "timeout_server", timeout_server_default
+                )
+                if timeout_server_max != 0 and (
+                    (backend_timeout_server > timeout_server_max)
+                    or backend_timeout_server == 0
+                ):
+                    print(
+                        "ERROR: actions->backend->timeout_server[{}] cannot be greater "
+                        "than globals->haproxy->timeout_server_max[{}]."
+                        "".format(
+                            "infinite"
+                            if backend_timeout_server == 0
+                            else backend_timeout_server,
+                            "infinite"
+                            if timeout_server_max == 0
+                            else timeout_server_max,
+                        )
+                    )
+                    print(rule["_orm_source_file"] + " (" + rule["description"] + ")")
+                    return False
+    return True
+
+
 def validate_constraints_domain_default(domain_rules):
     # Assert there is only one domain_default per domain
     print("Checking for domain_default collisions...")
@@ -630,10 +713,15 @@ def validate_constraints_rule_collision(domain_rules, cache_path=None):
 
 
 # Validate constraints not covered by schema validation
-def validate_rule_constraints(yml_files=None, cache_path=None):
+def validate_rule_constraints(yml_files=None, globals_path=None, cache_path=None):
     orm_docs = parser.parse_rules(yml_files)
     print("Validating additional ORM constraints...")
     if not validate_constraints_domain_default(orm_docs["rules"]):
+        return False
+    globals_doc = parser.parse_globals(globals_path)
+    if not validate_constraints_timeout_server(
+        domain_rules=orm_docs["rules"], globals_doc=globals_doc
+    ):
         return False
     if not validate_constraints_rule_collision(
         orm_docs["rules"], cache_path=cache_path

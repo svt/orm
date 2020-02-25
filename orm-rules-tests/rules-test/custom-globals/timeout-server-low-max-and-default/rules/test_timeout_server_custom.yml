@@ -1,0 +1,57 @@
+---
+schema_version: 1
+
+rules:
+  - description: 'Test backend with custom server timeout set (origin syntax)'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/backend/timeout_server'
+    actions:
+      backend:
+        origin: 'http://127.0.0.1:4242'
+        timeout_server: 0.001
+
+tests:
+  - name: 'Test that origin syntax works and that we strike timeout on 1ms (server sleeps for 100ms)'
+    request:
+      url: 'https://test/backend/timeout_server?sleep=0.1'
+    expect:
+      status: 504
+
+---
+schema_version: 1
+
+rules:
+  - description: Test slow backend with custom server timeout set
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/backend/timeout_server_custom'
+    actions:
+      backend:
+        timeout_server: 4
+        servers:
+          - server: 'http://127.0.0.1:4242'
+
+tests:
+  - name: 'Test that custom timeout_server (4s) overrides default (2s set in global config)'
+    request:
+      url: 'https://test/backend/timeout_server_custom?sleep=3'
+    expect:
+      status: 200
+      time_min: 3
+      time_max: 4
+  - name: 'Test that custom server timeout strikes (4s)'
+    request:
+      url: 'https://test/backend/timeout_server_custom?sleep=6'
+    expect:
+      status: 504
+      time_min: 4
+      time_max: 5

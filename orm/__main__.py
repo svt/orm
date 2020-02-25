@@ -85,7 +85,9 @@ def main():
     if not args.no_check:
         print("Validating ORM rule files...")
         if not validator.validate_rule_files(
-            yml_files=yml_files, cache_path=args.cache_path
+            yml_files=yml_files,
+            globals_path=args.globals_path,
+            cache_path=args.cache_path,
         ):
             print("ERROR: Not valid")
             exit(1)

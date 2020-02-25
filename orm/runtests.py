@@ -1,4 +1,5 @@
 import sys
+import time
 import re
 from urllib.parse import urlparse
 import urllib3
@@ -13,14 +14,19 @@ def python_regex(orm_regex):
 
 def run_tests(tests, target, verify_certs=True):
     # pylint:disable=too-many-locals,too-many-branches,too-many-statements
+    prev_file = ""
     for test in tests:
-        print("Run tests from: {}".format(test["_orm_source_file"]))
+        if prev_file != test["_orm_source_file"]:
+            print("# Run tests from: {}".format(test["_orm_source_file"]))
+        prev_file = test["_orm_source_file"]
         name = test.get("name")
         url = test["request"]["url"]
         expect_status = test["expect"].get("status")
         expect_body = test["expect"].get("body", [])
         expect_headers = test["expect"].get("headers", [])
-        print("Test: {}".format(name))
+        expect_time_min = test["expect"].get("time_min")
+        expect_time_max = test["expect"].get("time_max")
+        print("  Test: {}".format(name))
 
         url_parsed = urlparse(url)
         do_target = "{scheme}://{netloc}{path}".format(
@@ -33,12 +39,13 @@ def run_tests(tests, target, verify_certs=True):
             do_target = "{}#{}".format(do_target, url_parsed.fragment)
 
         headers = {"Host": url_parsed.netloc}
-
-        print("request.get: {}".format(do_target))
+        print("    request.get: {}".format(do_target), end="")
+        reqtime = time.time()
         r = requests.get(
             do_target, headers=headers, verify=verify_certs, allow_redirects=False
         )
-
+        reqtime = time.time() - reqtime
+        print(" [{:.3f}s]".format(reqtime))
         if expect_status:
             if r.status_code != expect_status:
                 print(
@@ -70,3 +77,20 @@ def run_tests(tests, target, verify_certs=True):
                         )
                     )
                     sys.exit(1)
+        if expect_time_min:
+            if reqtime < expect_time_min:
+                print(
+                    "Request time (t) was {}s, expected >= {}s.".format(
+                        reqtime, expect_time_min
+                    )
+                )
+                sys.exit(1)
+        if expect_time_max:
+            if reqtime > expect_time_max:
+                print(
+                    "Request time (t) was {}s, expected <= {}s.".format(
+                        reqtime, expect_time_max
+                    )
+                )
+                sys.exit(1)
+        print()

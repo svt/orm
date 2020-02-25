@@ -264,17 +264,24 @@ Sends the requests to a single origin or loadbalances between multiple servers.
 
 Contains one of the following objects:
 
-| key    | required | type              |
-|--------|:--------:|-------------------|
-| origin | ✓        | [origin](#origin) |
+| key            | required | type                              |
+|----------------|:--------:|-----------------------------------|
+| origin         | ✓        | [origin](#origin)                 |
+| timeout_server |          | [timeout_server](#timeout_server) |
 
-| key     | required | type                       |
-|---------|:--------:|----------------------------|
-| servers | ✓        | array of [origin](#origin) |
+or:
 
-| key     | required | type                                     |
-|---------|:--------:|------------------------------------------|
-| servers | ✓        | array of [origin_object](#origin_object) |
+| key            | required | type                              |
+|----------------|:--------:|-----------------------------------|
+| servers        | ✓        | array of [origin](#origin)        |
+| timeout_server |          | [timeout_server](#timeout_server) |
+
+or:
+
+| key            | required | type                                     |
+|----------------|:--------:|------------------------------------------|
+| servers        | ✓        | array of [origin_object](#origin_object) |
+| timeout_server |          | [timeout_server](#timeout_server)        |
 
 ### `origin_object`
 
@@ -521,6 +528,25 @@ HAProxy is used in ORM to accept requests. It then sends them to Varnish for pro
 | group                       | ✓        | [unix_user_or_group](#unix_user_or_group) |
 | control_user                | ✓        | [unix_user_or_group](#unix_user_or_group) |
 | control_group               | ✓        | [unix_user_or_group](#unix_user_or_group) |
+| timeout_server_max          |          | [timeout_server_max](#timeout_server_max) |
+
+### timeout_server_max
+
+*integer*
+
+Sets the maximum [backend](#backend) [timeout_server](#timeout_server) allowed for any backend, in seconds.
+
+Defaults to 15s.
+
+Translates into haproxy defaults [timeout server](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#4-timeout%20server) parameter.
+
+### timeout_server_default
+
+*integer*
+
+Sets the default backend server timeout for [backend](#backend) [timeout_server](#timeout_server) in seconds.
+
+Defaults to 15s.
 
 ### `varnish`
 
@@ -575,6 +601,18 @@ Specify actions that are always performed. The actions are performed before the 
 | header_northbound |          | [header_northbound](#header_southbound-header_northbound) |
 
 # Format types
+
+### timeout_server
+
+*integer*
+
+Sets [backend](#backend) timeout in seconds.
+
+Defaults to [timeout_server_default](#timeout_server_default).
+
+Maximum allowed value controlled by [timeout_server_max](#timeout_server_max).
+
+Translates into haproxy backend [timeout server](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#4-timeout%20server) parameter
 
 ### max_connections
 

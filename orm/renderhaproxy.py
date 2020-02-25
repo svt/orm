@@ -1,5 +1,6 @@
 from orm.render import RenderOutput, ORMInternalRenderException
 import orm.parser as parser
+from orm.constants import TIMEOUT_SERVER_DEFAULT_DEFAULT
 
 
 def make_custom_internal_healthcheck(healthcheck_config):
@@ -42,6 +43,17 @@ class RenderHAProxy(RenderOutput):
             )
             self.backends.append("")
             self.backends.append("backend " + rule_id)
+            haproxy = self.globals_doc.get("haproxy", {})
+            timeout_server_default = haproxy.get(
+                "timeout_server_default", TIMEOUT_SERVER_DEFAULT_DEFAULT
+            )
+            backend_timeout_server = int(
+                1000
+                * float(backend_config.get("timeout_server", timeout_server_default))
+            )
+            self.backends.append(
+                "    timeout server {}ms".format(backend_timeout_server)
+            )
         for origin in origins:
             origin_instance = origin
             if isinstance(origin, str):
@@ -69,12 +81,10 @@ class RenderHAProxy(RenderOutput):
                 )
             if origin_instance.get("max_connections", False):
                 server += " maxconn {}".format(origin_instance["max_connections"])
-
             if origin_instance.get("max_queued_connections", False):
                 server += " maxqueue {}".format(
                     origin_instance["max_queued_connections"]
                 )
-
             self.backends.append(server)
 
     def make_actions(self, action_config, rule_id):
@@ -113,6 +123,7 @@ class RenderHAProxy(RenderOutput):
             nameservers=nameservers,
             varnish_address=varnish.get("address", "localhost"),
             haproxy_address=haproxy.get("address", "localhost"),
+            haproxy_timeout_server_max=haproxy.get("timeout_server_max"),
             user=haproxy.get("user", "root"),
             group=haproxy.get("group", "root"),
             control_user=haproxy.get("control_user", "root"),

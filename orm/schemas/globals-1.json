@@ -10,6 +10,14 @@
           "type": "string",
           "format": "hostname"
         },
+        "timeout_server_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "timeout_server_default": {
+          "type": "number",
+          "minimum": 0
+        },
         "user": {
           "type": "string",
           "format": "unix_user_or_group"
