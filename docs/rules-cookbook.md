@@ -259,10 +259,8 @@ Set a 5 seconds server timeout for one backend:
 ```
   actions:
     backend:
-      timeout_server: 20000
-      servers:
-        - 'https://backend-1.domain.example'
-        - 'https://backend-2.domain.example'
+      timeout_server: 5000
+      origin: 'https://my-backend.domain.example'
 ```
 
 ### 2.2. Rewriting

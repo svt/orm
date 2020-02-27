@@ -5,3 +5,7 @@ schema_version: 1
 crypto:
   certificates:
     - /etc/ssl/orm.pem
+
+haproxy:
+  max_server_timeout: 25000
+  timeout_server_default: 15000

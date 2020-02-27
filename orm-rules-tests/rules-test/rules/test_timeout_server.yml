@@ -22,11 +22,14 @@ tests:
       url: 'https://test/backend/timeout_server_default?sleep=0'
     expect:
       status: 200
-  - name: 'Test that default server timeout strikes (set to 15s in haproxy test config)'
+      time_max: 2
+  - name: 'Test that default server timeout strikes (set to 15s in global haproxy config)'
     request:
       url: 'https://test/backend/timeout_server_default?sleep=20'
     expect:
       status: 504
+      time_min: 15
+      time_max: 17
 
 ---
 
@@ -53,8 +56,40 @@ tests:
       url: 'https://test/backend/timeout_server_custom?sleep=17'
     expect:
       status: 200
-  - name: 'Test that custom server timeout strikes'
+      time_min: 17
+      time_max: 19
+  - name: 'Test that custom server timeout strikes (20s)'
     request:
       url: 'https://test/backend/timeout_server_custom?sleep=30'
     expect:
       status: 504
+      time_min: 20
+      time_max: 22
+
+---
+
+schema_version: 1
+
+rules:
+  - description: 'Test slow backend with custom server timeout set higher than max allowed'
+    domains:
+      - test
+    matches:
+      all:
+        - paths:
+            exact:
+              - '/backend/timeout_server_higher_max'
+    actions:
+      backend:
+        timeout_server: 30000
+        servers:
+          - server: 'http://127.0.0.1:4242'
+
+tests:
+  - name: 'Test that max server timeout strikes (25s in global haproxy config)'
+    request:
+      url: 'https://test/backend/timeout_server_higher_max?sleep=35'
+    expect:
+      status: 504
+      time_min: 25
+      time_max: 27

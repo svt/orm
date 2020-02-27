@@ -528,6 +528,25 @@ HAProxy is used in ORM to accept requests. It then sends them to Varnish for pro
 | group                       | ✓        | [unix_user_or_group](#unix_user_or_group) |
 | control_user                | ✓        | [unix_user_or_group](#unix_user_or_group) |
 | control_group               | ✓        | [unix_user_or_group](#unix_user_or_group) |
+| max_server_timeout          |          | [max_server_timeout](#max_server_timeout) |
+
+### max_server_timeout
+
+*integer*
+
+Sets the maximum [backend](#backend) [timeout_server](#timeout_server) allowed for any backend, in milliseconds.
+
+Defaults to 15000ms.
+
+Translates into haproxy defaults [timeout server](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#4-timeout%20server) parameter.
+
+### timeout_server_default
+
+*integer*
+
+Sets the default backend server timeout for [backend](#backend) [timeout_server](#timeout_server) in milliseconds.
+
+Defaults to 15000ms.
 
 ### `varnish`
 
@@ -588,6 +607,10 @@ Specify actions that are always performed. The actions are performed before the 
 *integer*
 
 Sets [backend](#backend) timeout in milliseconds.
+
+Defaults to [timeout_server_default](#timeout_server_default).
+
+Maximum allowed value controlled by [max_server_timeout](#max_server_timeout).
 
 Translates into haproxy backend [timeout server](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#4-timeout%20server) parameter
 

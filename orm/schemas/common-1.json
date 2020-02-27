@@ -419,6 +419,12 @@
             "required": ["field", "regex"],
             "additionalProperties": false
           }
+        },
+        "time_max": {
+          "type": "number"
+        },
+        "time_min": {
+          "type": "number"
         }
       },
       "additionalProperties": false

@@ -42,12 +42,14 @@ class RenderHAProxy(RenderOutput):
             )
             self.backends.append("")
             self.backends.append("backend " + rule_id)
-            if backend_config.get("timeout_server", False):
-                self.backends.append(
-                    "    timeout server {}ms".format(backend_config["timeout_server"])
-                )
-            else:
-                self.backends.append("    timeout server 15s")
+            haproxy = self.globals_doc.get("haproxy", {})
+            timeout_server_default = haproxy.get("timeout_server_default", 15000)
+            backend_timeout_server = backend_config.get(
+                "timeout_server", timeout_server_default
+            )
+            self.backends.append(
+                "    timeout server {}ms".format(backend_timeout_server)
+            )
         for origin in origins:
             origin_instance = origin
             if isinstance(origin, str):
@@ -117,6 +119,7 @@ class RenderHAProxy(RenderOutput):
             nameservers=nameservers,
             varnish_address=varnish.get("address", "localhost"),
             haproxy_address=haproxy.get("address", "localhost"),
+            haproxy_max_server_timeout=haproxy.get("max_server_timeout"),
             user=haproxy.get("user", "root"),
             group=haproxy.get("group", "root"),
             control_user=haproxy.get("control_user", "root"),
