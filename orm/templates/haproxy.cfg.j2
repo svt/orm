@@ -20,7 +20,7 @@ global
 defaults
     maxconn 10000
     mode http
-{% if haproxy_max_server_timeout is defined %}
+{% if haproxy_max_server_timeout is defined and haproxy_max_server_timeout != None %}
 {%   if haproxy_max_server_timeout != 0 %}
     timeout server {{ haproxy_max_server_timeout }}ms
 {%   endif %}
