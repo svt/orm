@@ -1,0 +1,11 @@
+---
+
+schema_version: 1
+
+crypto:
+  certificates:
+    - /etc/ssl/orm.pem
+
+haproxy:
+  timeout_server_max: 5
+  timeout_server_default: 2

@@ -207,16 +207,26 @@
                 "additionalProperties": false
               }]
             }
+          },
+          "timeout_server": {
+            "type": "number",
+            "minimum": 0
           }
         },
+        "required": ["servers"],
         "additionalProperties": false
       }, {
         "properties": {
           "origin": {
             "type": "string",
             "format": "origin"
+          },
+          "timeout_server": {
+            "type": "number",
+            "minimum": 0
           }
         },
+        "required": ["origin"],
         "additionalProperties": false
       }]
     },
@@ -414,6 +424,12 @@
             "required": ["field", "regex"],
             "additionalProperties": false
           }
+        },
+        "time_max": {
+          "type": "number"
+        },
+        "time_min": {
+          "type": "number"
         }
       },
       "additionalProperties": false

@@ -28,7 +28,9 @@ PYTHON ?= python3
 env: requirements.txt
 	@echo "This is a local build, I will use virtualenv"
 	virtualenv -p ${PYTHON} env
-	. env/bin/activate && make env-install
+	. env/bin/activate && \
+		python -m pip install pip==19.0.3 && \
+		make env-install
 endif
 
 env-install: requirements.txt
@@ -162,23 +164,47 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 	@echo "Linting deployment test rules"
 	$(ENV_PREP_COMMAND) && \
 		yamllint -c orm-rules-tests/.yamllint orm-rules-tests/
+	orm-rules-tests/start_test_servers.sh
+
 	@echo "Testing rules without globals actions"
-	orm-rules-tests/start_echo_servers.sh
 	$(ENV_PREP_COMMAND) && \
     orm \
-			-r 'orm-rules-tests/rules-test/rules/**/*.yml' \
-			-G 'orm-rules-tests/rules-test/globals.yml' \
-			--cache-path 'orm-rules-tests/rules-test/cache.pkl' \
+			-r 'orm-rules-tests/rules-test/default-globals/rules/**/*.yml' \
+			-G 'orm-rules-tests/rules-test/default-globals/globals.yml' \
+			--cache-path 'orm-rules-tests/rules-test/default-globals/cache.pkl' \
 			-o out
 	lxd/update-orm-config.sh out
 	orm-rules-tests/wait_for_orm.sh
 	$(ENV_PREP_COMMAND) && \
-		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/rules/**/*.yml' && \
+		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/default-globals/rules/**/*.yml' && \
 		lxc file push orm-rules-tests/test-maxconn-maxqueue-haproxy-output.sh orm/root/ && \
 		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
 
+	@echo "Testing rules with customized globals - timeout-server-max-infinite"
+	$(ENV_PREP_COMMAND) && \
+    orm \
+			-r 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite/rules/**/*.yml' \
+			-G 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite/globals.yml' \
+			--cache-path 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite/cache.pkl' \
+			-o out
+	lxd/update-orm-config.sh out
+	orm-rules-tests/wait_for_orm.sh
+	$(ENV_PREP_COMMAND) && \
+		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite/rules/**/*.yml'
+
+	@echo "Testing rules with customized globals - timeout-server-low-max-and-default"
+	$(ENV_PREP_COMMAND) && \
+    orm \
+			-r 'orm-rules-tests/rules-test/custom-globals/timeout-server-low-max-and-default/rules/**/*.yml' \
+			-G 'orm-rules-tests/rules-test/custom-globals/timeout-server-low-max-and-default/globals.yml' \
+			--cache-path 'orm-rules-tests/rules-test/custom-globals/timeout-server-low-max-and-default/cache.pkl' \
+			-o out
+	lxd/update-orm-config.sh out
+	orm-rules-tests/wait_for_orm.sh
+	$(ENV_PREP_COMMAND) && \
+		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/custom-globals/timeout-server-low-max-and-default/rules/**/*.yml'
+
 	@echo "Testing rules with globals actions"
-	orm-rules-tests/start_echo_servers.sh
 	$(ENV_PREP_COMMAND) && \
     orm \
 			-r 'orm-rules-tests/globals-test/rules/**/*.yml' \

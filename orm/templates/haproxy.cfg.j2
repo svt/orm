@@ -20,9 +20,15 @@ global
 defaults
     maxconn 10000
     mode http
+{% if haproxy_timeout_server_max is defined and haproxy_timeout_server_max != None %}
+{%   if haproxy_timeout_server_max != 0 %}
+    timeout server {{ haproxy_timeout_server_max * 1000|int }}ms
+{%   endif %}
+{% else %}
+    timeout server 15s
+{% endif %}
     timeout connect 10s
     timeout client 15s
-    timeout server 15s
     timeout queue 10s
     option dontlognull
     option splice-auto

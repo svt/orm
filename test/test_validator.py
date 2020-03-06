@@ -35,17 +35,19 @@ class ValidateRulesTest(unittest.TestCase):
         pass
 
     def test_validate_rule_files(self):
-        r = validator.validate_rule_files(yml_files=[self.valid_rule])
+        r = validator.validate_rule_files(yml_files=[self.valid_rule],
+                                          globals_path=self.valid_globals)
         self.assertEqual(r, True, "Check valid rule file")
 
-        r = validator.validate_rule_files(yml_files=[self.invalid_schema])
+        r = validator.validate_rule_files(yml_files=[self.invalid_schema],
+                                          globals_path=self.valid_globals)
         self.assertEqual(r, False, "Check invalid rule file schema")
 
     def test_validate_globals_file(self):
-        r = validator.validate_globals_file(globals_file=self.valid_globals)
+        r = validator.validate_globals_file(globals_path=self.valid_globals)
         self.assertEqual(r, True, "Check valid globals file")
 
-        r = validator.validate_globals_file(globals_file=self.invalid_globals)
+        r = validator.validate_globals_file(globals_path=self.invalid_globals)
         self.assertEqual(r, False, "Check invalid globals file schema")
 
     def test_validate_rule_schema(self):
@@ -56,22 +58,25 @@ class ValidateRulesTest(unittest.TestCase):
         self.assertEqual(r, False, "Check for invalid schema")
 
     def test_validate_rule_constraints(self):
-        r = validator.validate_rule_constraints(yml_files=[self.valid_rule])
+        r = validator.validate_rule_constraints(yml_files=[self.valid_rule],
+                                                globals_path=self.valid_globals)
         self.assertEqual(r, True, "Constraint check with valid ORM file")
         r = validator.validate_rule_constraints(yml_files=
-                                                [self.invalid_collision])
+                                                [self.invalid_collision],
+                                                globals_path=self.valid_globals)
         self.assertEqual(r, False, "Constraint check with invalid ORM file")
-        r = validator.validate_rule_constraints(yml_files=[self.ignore_case])
+        r = validator.validate_rule_constraints(yml_files=[self.ignore_case],
+                                                globals_path=self.valid_globals)
         self.assertEqual(r, False, "Constraint check with ignore_case "
                          "collision in invalid ORM file")
         r = validator.validate_rule_constraints(yml_files=[
             self.multiple_domain_default
-        ])
+        ], globals_path=self.valid_globals)
         self.assertEqual(r, False, "Constraint check with invalid ORM file "
                          "due to multiple domain_default")
         r = validator.validate_rule_constraints(yml_files=[
             self.domain_default_false
-        ])
+        ], globals_path=self.valid_globals)
         self.assertEqual(r, False, "Constraint check with invalid ORM file "
                          "due to 'domain_default: False'")
 
