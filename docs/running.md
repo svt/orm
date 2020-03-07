@@ -23,4 +23,4 @@ When ORM is run with a path to a ruleset, the rules under the path are:
 
 For an example of using ORM with included example rules, and to try it out locally, see [example/README.md](example/README.md).
 
-For a more production-like setup, see the [lxd/](lxd) folder. This deployment is used for the release tests of ORM.
+For a more production-like setup, see the [lxd/](../lxd) folder. This deployment is used for the release tests of ORM.
