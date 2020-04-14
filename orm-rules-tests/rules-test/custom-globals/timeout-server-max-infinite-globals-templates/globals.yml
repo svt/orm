@@ -2,6 +2,8 @@
 
 schema_version: 1
 
+templates_path: orm-rules-tests/templates_globals
+
 crypto:
   certificates:
     - /etc/ssl/orm.pem

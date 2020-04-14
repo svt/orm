@@ -1,0 +1,209 @@
+vcl 4.0;
+
+import std;
+import variable;
+import directors;
+
+backend orm_loopback-1 {
+  .host = "{{ haproxy_address }}";
+  .port = "4444";
+  .proxy_header = 2;
+}
+backend orm_loopback-2 {
+  .host = "{{ haproxy_address }}";
+  .port = "4445";
+  .proxy_header = 2;
+}
+backend orm_loopback-3 {
+  .host = "{{ haproxy_address }}";
+  .port = "4446";
+  .proxy_header = 2;
+}
+backend orm_loopback-4 {
+  .host = "{{ haproxy_address }}";
+  .port = "4447";
+  .proxy_header = 2;
+}
+
+sub vcl_init {
+  # Called when VCL is loaded, before any requests pass through it.
+  # Typically used to initialize VMODs.
+
+  new round_robin_director = directors.round_robin();
+  round_robin_director.add_backend(orm_loopback-1);
+  round_robin_director.add_backend(orm_loopback-2);
+  round_robin_director.add_backend(orm_loopback-3);
+  round_robin_director.add_backend(orm_loopback-4);
+}
+
+sub vcl_pipe {
+  # Called upon entering pipe mode.
+  # In this mode, the request is passed on to the backend, and any further data from both the client
+  # and backend is passed on unaltered until either end closes the connection. Basically, Varnish will
+  # degrade into a simple TCP proxy, shuffling bytes back and forth. For a connection in pipe mode,
+  # no other VCL subroutine will ever get called after vcl_pipe.
+
+  # Note that only the first request to the backend will have
+  # X-Forwarded-For set.  If you use X-Forwarded-For and want to
+  # have it set for all requests, make sure to have:
+  # set bereq.http.connection = "close";
+  # here.  It is not set by default as it might break some broken web
+  # applications, like IIS with NTLM authentication.
+
+  # set bereq.http.Connection = "Close";
+
+  # Support websockets (https://varnish-cache.org/docs/6.0/users-guide/vcl-example-websockets.html)
+  if (req.http.upgrade) {
+    set bereq.http.upgrade = req.http.upgrade;
+  }
+
+  return (pipe);
+}
+
+sub vcl_pass {
+  # Called upon entering pass mode. In this mode, the request is passed on to the backend, and the
+  # backend's response is passed on to the client, but is not entered into the cache. Subsequent
+  # requests submitted over the same client connection are handled normally.
+
+  # Proceed with pass mode - initiate a backend request.
+  return (fetch);
+}
+
+# Do stuff before sending the request to backend
+sub vcl_backend_fetch {
+  # Called before sending the backend request. In this subroutine you typically alter the request before it gets to the backend.
+
+  # Fetch from backend.
+  return (fetch);
+}
+
+# Handle the HTTP request coming from our backend
+sub vcl_backend_response {
+  # Called after the response headers has been successfully retrieved from the backend.
+}
+
+sub vcl_fini {
+  # Called when VCL is discarded only after all requests have exited the VCL.
+  # Typically used to clean up VMODs.
+
+  return (ok);
+}
+
+# ORM: Global actions for southbound traffic
+sub global_actions_southbound {
+{% for line in global_actions_southbound %}
+{{ line }}
+{% endfor %}
+}
+
+# ORM: Global actions for northbound traffic
+sub global_actions_northbound {
+{% for line in global_actions_northbound %}
+{{ line }}
+{% endfor %}
+}
+
+# ORM: This is where ORM matching rules are generated
+{% for line in matches %}
+{{ line }}
+{% endfor %}
+
+sub vcl_synth {
+  call global_actions_northbound;
+  # To use these, call the following from anywhere in vcl_recv: return (synth(<resp.status>, <resp.reason>));
+  # For example: return (synth(308, "http://host/new.html"));
+  if (resp.status == 307) {
+    set resp.http.Location = resp.reason;
+    set resp.reason = "Temporary Redirect";
+  } elseif (resp.status == 308) {
+    set resp.http.Location = resp.reason;
+    set resp.reason = "Permanent Redirect";
+  } elseif (resp.status == 301) {
+    set resp.http.Location = resp.reason;
+    set resp.reason = "Moved Permanently";
+  } elseif (resp.status == 302) {
+    set resp.http.Location = resp.reason;
+    set resp.reason = "Found";
+  } elseif (resp.status == 750) {
+    # Custom HTTP code used for synthetic responses
+    set resp.status = 200;
+    # ORM: Synthetic responses
+{% for line in synthetic_responses %}
+{{ line }}
+{% endfor %}
+  }
+
+  return (deliver);
+}
+{% if uses_sub_use_backend %}
+
+# Called from vcl_recv when there is a matching rule specifying a backend.
+sub use_backend {
+  call reconstruct_requrl;
+
+  # Remove the proxy header (see https://httpoxy.org/#mitigate-varnish)
+  unset req.http.proxy;
+
+  # Use pipe for non-RFC2616 and CONNECT
+  if (req.method != "GET" &&
+      req.method != "HEAD" &&
+      req.method != "PUT" &&
+      req.method != "POST" &&
+      req.method != "TRACE" &&
+      req.method != "OPTIONS" &&
+      req.method != "PATCH" &&
+      req.method != "DELETE") {
+    return (pipe);
+  }
+
+  # Support websockets (https://varnish-cache.org/docs/6.0/users-guide/vcl-example-websockets.html)
+  if (req.http.upgrade ~ "(?i)websocket") {
+    return (pipe);
+  }
+
+  return (pass);
+}
+{% endif %}
+{% if uses_sub_use_backend %}
+
+sub reconstruct_requrl {
+  set req.url = variable.get("path");
+  if (variable.get("query") != "") {
+    set req.url = req.url + "?" + variable.get("query");
+  }
+  variable.unset("path");
+  variable.unset("query");
+}
+{% endif %}
+
+sub vcl_recv {
+  # Called at the beginning of a request, after the complete request has been received and parsed.
+  # Its purpose is to decide whether or not to serve the request, how to do it, and, if applicable,
+  # which backend to use.
+  # also used to modify the request
+
+  # Deconstruct req.url for matching and rewriting (using RFC3986 Appendix B)
+  variable.regset("path:s=\1,query:s=\3", "^([^?#]*)(\?([^#]*))?(#(.*))?$", req.url);
+
+  # ORM: This is where we set the origin and southbound rules using ORM
+{% for line in southbound_actions %}
+{{ line }}
+{% endfor %}
+
+  # Safeguard default
+  return (synth(500, "No ORM backend configured for request"));
+}
+
+# The routine where we deliver the HTTP request to the user
+# Last chance to modify headers that are sent to the client
+sub vcl_deliver {
+  # Called before any object except a vcl_synth result is delivered to the client.
+
+  call global_actions_northbound;
+  # ORM: This is where we set the northbound rules using ORM
+{% for line in northbound_actions %}
+{{ line }}
+{% endfor %}
+
+  return (deliver);
+}

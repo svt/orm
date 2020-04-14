@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, PackageLoader, FileSystemLoader
 
 
 class ORMInternalRenderException(Exception):
@@ -16,9 +16,14 @@ class RenderOutput:
         self.globals_doc = globals_doc
         self.output_file = output_file
         self.config = ""
-        self.jinja = Environment(
-            loader=PackageLoader("orm", "templates"), trim_blocks=True
+        templates_path = os.environ.get(
+            "ORM_TEMPLATES_PATH", self.globals_doc.get("templates_path")
         )
+        if not templates_path:
+            loader = PackageLoader("orm", "templates")
+        else:
+            loader = FileSystemLoader(templates_path)
+        self.jinja = Environment(loader=loader, trim_blocks=True)
 
     def write_config_to_file(self, directory=None):
         """ Outputs the rules list to a file """

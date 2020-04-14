@@ -168,7 +168,8 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 
 	@echo "Testing rules without globals actions"
 	$(ENV_PREP_COMMAND) && \
-    orm \
+		export ORM_TEMPLATES_PATH="orm-rules-tests/templates_env" && \
+		orm \
 			-r 'orm-rules-tests/rules-test/default-globals/rules/**/*.yml' \
 			-G 'orm-rules-tests/rules-test/default-globals/globals.yml' \
 			--cache-path 'orm-rules-tests/rules-test/default-globals/cache.pkl' \
@@ -178,19 +179,23 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 	$(ENV_PREP_COMMAND) && \
 		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/default-globals/rules/**/*.yml' && \
 		lxc file push orm-rules-tests/test-maxconn-maxqueue-haproxy-output.sh orm/root/ && \
-		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
+		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh && \
+		lxc file push orm-rules-tests/test-templates-path-env-haproxy-output.sh orm/root/ && \
+		lxc exec orm /root/test-templates-path-env-haproxy-output.sh
 
-	@echo "Testing rules with customized globals - timeout-server-max-infinite"
+	@echo "Testing rules with customized globals - timeout-server-max-infinite-globals-template"
 	$(ENV_PREP_COMMAND) && \
-    orm \
-			-r 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite/rules/**/*.yml' \
-			-G 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite/globals.yml' \
-			--cache-path 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite/cache.pkl' \
+		orm \
+			-r 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite-globals-templates/rules/**/*.yml' \
+			-G 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite-globals-templates/globals.yml' \
+			--cache-path 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite-globals-templates/cache.pkl' \
 			-o out
 	lxd/update-orm-config.sh out
 	orm-rules-tests/wait_for_orm.sh
 	$(ENV_PREP_COMMAND) && \
-		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite/rules/**/*.yml'
+		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/custom-globals/timeout-server-max-infinite-globals-templates/rules/**/*.yml'
+		lxc file push orm-rules-tests/test-templates-path-globals-haproxy-output.sh orm/root/ && \
+		lxc exec orm /root/test-templates-path-globals-haproxy-output.sh
 
 	@echo "Testing rules with customized globals - timeout-server-low-max-and-default"
 	$(ENV_PREP_COMMAND) && \

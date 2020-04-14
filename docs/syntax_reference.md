@@ -454,6 +454,7 @@ ORM globals are used to configure ORM deployment specific settings as well as ap
 | custom_internal_healthcheck |          | [custom_internal_healthcheck](#custom_internal_healthcheck) |
 | haproxy                     |          | [haproxy](#haproxy)                     |
 | varnish                     |          | [varnish](#varnish)                     |
+| templates_path              |          | [templates_path](#templates_path)       |
 
 ## Deployment specific settings
 
@@ -601,6 +602,16 @@ Specify actions that are always performed. The actions are performed before the 
 | header_northbound |          | [header_northbound](#header_southbound-header_northbound) |
 
 # Format types
+
+### templates_path
+
+*string*
+
+Sets path to jinja2 templates, for haproxy or varnish configuration.
+
+Note! This can be overridden by setting the `ORM_TEMPLATES_PATH` enviroment variable.
+
+It is optional and defaults to package builtin templates path.
 
 ### timeout_server
 

@@ -3,6 +3,9 @@
   "type": "object",
   "properties": {
     "schema_version": {"$ref": "common-1.json#/definitions/schema_version"},
+    "templates_path": {
+      "type": "string"
+    },
     "haproxy": {
       "type": "object",
       "properties": {
