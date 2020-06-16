@@ -167,7 +167,11 @@ sub use_backend {
 {% if uses_sub_use_backend %}
 
 sub reconstruct_requrl {
-  set req.url = variable.get("path");
+  if (variable.get("path") != "") {
+    set req.url = variable.get("path");
+  } else {
+    set req.url = "/";
+  }
   if (variable.get("query") != "") {
     set req.url = req.url + "?" + variable.get("query");
   }
