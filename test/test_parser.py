@@ -12,12 +12,14 @@ class ParseRulesTest(unittest.TestCase):
         testpath = 'test/testdata/parser/'
         self.valid_rule_file = testpath + 'rule.yml'
         self.valid_rule_file2 = testpath + 'rule2.yml'
+        self.valid_rule_file_sni = testpath + 'rule_sni.yml'
         self.invalid_rule_file = testpath + 'invalid_rule.failyml'
         self.defaults_file = testpath + 'defaults.yml'
         self.merge_files = [testpath + 'merge1.yml',
                             testpath + 'merge2.yml']
         self.valid_rule_files = [self.valid_rule_file,
-                                 self.valid_rule_file2]
+                                 self.valid_rule_file2,
+                                 self.valid_rule_file_sni]
         def handle_condition_list(data_list_in, op, negate):
             data_out = (('!' if negate else '') + op
                         + '['  + ','.join(data_list_in) + ']')
@@ -43,6 +45,13 @@ class ParseRulesTest(unittest.TestCase):
         self.assertEqual(len(yml_docs), 1)
         for yml_doc in yml_docs:
             self.assertIsInstance(yml_doc, dict)
+
+    def test_sni(self):
+        yml_docs = parser.parse_yaml_file(self.valid_rule_file_sni)
+        for yml_doc in yml_docs:
+            exp_parsed_doc = {'backend': {'servers': [{'server': 'some-origin.example.com', 'sni': 'some-sni.example.com'}, {'server': 'some-potato-origin.example.com'}]}}
+            parsed_doc = yml_doc["rules"][0]["actions"]
+            self.assertDictEqual(parsed_doc, exp_parsed_doc)
 
     def test_get_unique_id(self):
         allowed_pattern = re.compile(r'^[a-zA-Z0-9_]+$')

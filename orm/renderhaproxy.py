@@ -73,8 +73,12 @@ class RenderHAProxy(RenderOutput):
                 + " check"
             )
             if scheme == "https":
-                # TODO: add 'verify required sni ca-file verifyhost'
+                # TODO: add 'verify required ca-file verifyhost'
                 server += " ssl verify none"
+                if origin_instance.get("sni", False):
+                    server += " check-sni {sni} sni str({sni})".format(
+                        sni=origin_instance["sni"]
+                    )
             elif scheme != "http":
                 raise ORMInternalRenderException(
                     "ERROR: unhandled origin " "scheme: " + scheme

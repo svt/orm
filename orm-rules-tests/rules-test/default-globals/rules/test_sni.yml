@@ -1,0 +1,18 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: Test sni
+    domains:
+      - test
+    matches:
+      any:
+        - paths:
+            exact:
+              - '/'
+    actions:
+      backend:
+        servers:
+          - server: 127.0.0.1
+            sni: test

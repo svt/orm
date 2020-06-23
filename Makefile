@@ -178,7 +178,9 @@ deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
 	$(ENV_PREP_COMMAND) && \
 		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/default-globals/rules/**/*.yml' && \
 		lxc file push orm-rules-tests/test-maxconn-maxqueue-haproxy-output.sh orm/root/ && \
-		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
+		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh && \
+		lxc file push orm-rules-tests/test-sni.sh orm/root/ && \
+		lxc exec orm /root/test-sni.sh
 
 	@echo "Testing rules with customized globals - timeout-server-max-infinite"
 	$(ENV_PREP_COMMAND) && \
