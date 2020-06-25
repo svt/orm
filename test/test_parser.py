@@ -49,7 +49,19 @@ class ParseRulesTest(unittest.TestCase):
     def test_sni(self):
         yml_docs = parser.parse_yaml_file(self.valid_rule_file_sni)
         for yml_doc in yml_docs:
-            exp_parsed_doc = {'backend': {'servers': [{'server': 'some-origin.example.com', 'sni': 'some-sni.example.com'}, {'server': 'some-potato-origin.example.com'}]}}
+            exp_parsed_doc = {
+                'backend': {
+                    'servers': [
+                        {
+                            'server': 'some-origin.example.com',
+                            'sni': 'some-sni.example.com'
+                        },
+                        {
+                            'server': 'some-potato-origin.example.com'
+                        }
+                    ]
+                }
+            }
             parsed_doc = yml_doc["rules"][0]["actions"]
             self.assertDictEqual(parsed_doc, exp_parsed_doc)
 
