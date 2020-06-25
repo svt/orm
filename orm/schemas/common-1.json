@@ -204,7 +204,7 @@
                   },
                   "sni": {
                     "type": "string",
-		    "format": "hostname"
+                    "format": "hostname"
                   }
                 },
                 "required": ["server"],

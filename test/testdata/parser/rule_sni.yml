@@ -13,7 +13,7 @@ rules:
                 - '/'
     actions:
       backend:
-        servers: 
+        servers:
         - server: some-origin.example.com
           sni: some-sni.example.com
         - server: some-potato-origin.example.com
