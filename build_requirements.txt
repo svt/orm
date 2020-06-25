@@ -11,7 +11,7 @@ lazy-object-proxy==1.4.3  # via astroid
 mccabe==0.6.1             # via pylint
 pathspec==0.8.0           # via yamllint
 pip-tools==3.9.0
-pylint==2.5.3
+pylint==2.4.4
 pyyaml==5.3.1             # via yamllint
 six==1.15.0               # via astroid, pip-tools
 toml==0.10.1              # via pylint
