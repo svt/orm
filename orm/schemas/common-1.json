@@ -201,6 +201,10 @@
                   "max_queued_connections": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "sni": {
+                    "type": "string",
+                    "format": "hostname"
                   }
                 },
                 "required": ["server"],

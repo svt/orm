@@ -12,6 +12,8 @@
 			- [2.1.1 Routing to a single backend](#211-routing-to-a-single-backend)
 			- [2.1.2 Balancing over multiple backends](#212-balancing-over-multiple-backends)
 			- [2.1.3 Multiple backends with custom queue size and connection limits:](#213-multiple-backends-with-custom-queue-size-and-connection-limits)
+			- [2.1.4 Backends with server timeout:](#214-backends-with-server-timeout)
+			- [2.1.5 Send SNI headers to the backend:](#215-send-sni-headers-to-the-backend)
 		- [2.2. Rewriting](#22-rewriting)
 			- [2.2.1 Rewriting paths](#221-rewriting-paths)
 			- [2.2.2 Rewriting headers](#222-rewriting-headers)
@@ -261,6 +263,16 @@ Set a 5 seconds server timeout for one backend:
     backend:
       timeout_server: 5
       origin: 'https://my-backend.domain.example'
+```
+
+#### 2.1.5 Send SNI headers to the backend:
+
+```
+  actions:
+    backend:
+      servers:
+        - server: 'https://server.domain.example'
+          sni: 'server.domain.example'
 ```
 
 ### 2.2. Rewriting

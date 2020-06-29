@@ -1,0 +1,19 @@
+---
+
+schema_version: 1
+
+rules:
+  - description: SNI Test
+    domains:
+      - www.example.com
+    matches:
+      - any:
+          - paths:
+              equals:
+                - '/'
+    actions:
+      backend:
+        servers:
+        - server: some-origin.example.com
+          sni: some-sni.example.com
+        - server: some-potato-origin.example.com

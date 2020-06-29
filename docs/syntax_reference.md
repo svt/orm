@@ -296,6 +296,10 @@ Contains one or more of the following objects:
 | server                 | ✓        | [origin](#origin)                                 |
 | max_connections        |          | [max_connections](#max_connections)               |
 | max_queued_connections |          | [max_queued_connections](#max_queued_connections) |
+| sni                    |          | [hostname](#hostname)                             |
+
+
+The `sni` key sets [sni](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-sni) and [check-sni](https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#5.2-check-sni) options on the haproxy server line to the specified string. This option will only take effect when using TLS.
 
 ### `req_path`
 
