@@ -24,6 +24,7 @@
     - [2.3. Redirecting](#23-redirecting)
       - [2.3.1 Simple redirection](#231-simple-redirection)
       - [2.3.2 Redirection with rewriting](#232-redirection-with-rewriting)
+      - [2.3.3 Redirection with dynamic rewrite](#233-redirection-with-dynamic-rewrite)
     - [2.4 Synthetic responses](#24-synthetic-responses)
   - [3. Complete examples](#3-complete-examples)
     - [3.1 Routing requests to a single backend and rewriting request headers](#31-routing-requests-to-a-single-backend-and-rewriting-request-headers)
@@ -413,6 +414,20 @@ Temporarily redirect matching requests to a new domain using HTTPS and adjust th
       path:
         - prefix:
             add: /redirected
+```
+
+#### 2.3.3 Redirection with dynamic rewrite
+
+Redirection with dynamic rewrite of the path:
+
+```yaml
+  actions:
+    redirect:
+      type: temporary
+      path:
+        - replace:
+            from_regex: /page/(.*).html
+            to_regsub: /redirectedpage/\1
 ```
 
 ### 2.4 Synthetic responses
