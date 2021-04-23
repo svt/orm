@@ -18,8 +18,9 @@ def vcl_escape_regex(regex):
     return regex
 
 
-def vcl_safe_string(string):
-    string = string.replace("\n", "")
+def vcl_safe_string(string, strip_newline=True):
+    if strip_newline:
+        string = string.replace("\n", "")
     split = string.split(r'"}')
     if len(split) == 1:
         if r'"' in split[0]:
@@ -268,7 +269,12 @@ def make_redirect_action(config_in, config_out, rule_id, indent_depth=0):
 
 
 def make_synth_resp_action(config_in, config_out, rule_id, indent_depth=0):
-    synth = indent(3) + "synthetic(" + vcl_safe_string(config_in) + ");"
+    synth = (
+        indent(3)
+        + "synthetic("
+        + vcl_safe_string(config_in, strip_newline=False)
+        + ");"
+    )
     synth_clause = make_action_if_clause([synth], rule_id, indent_depth=2)
     config_out["synth"] = synth_clause
     config_out["sb"] = [indent(indent_depth) + 'return (synth(750, ""));']
