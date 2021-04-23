@@ -65,6 +65,13 @@ class RenderVarnishTest(unittest.TestCase):
         exp_str = '"ab"'
         nice_newline_str = rendervarnish.vcl_safe_string(newline_str)
         self.assertEqual(nice_newline_str, exp_str)
+        # newline_body_str contains '\n' which should be kept in the string
+        newline_body_str = "<html>\n<body>\nHello\n</body>\n</html>"
+        exp_str = '"<html>\n<body>\nHello\n</body>\n</html>"'
+        nice_with_newlines_str = rendervarnish.vcl_safe_string(newline_body_str,
+                                                               strip_newline=False)
+        self.assertEqual(nice_with_newlines_str, exp_str)
+
 
     def test_get_unique_vcl_name(self):
         namespace = 'ns'
