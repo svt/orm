@@ -26,7 +26,6 @@ PYTHON_SETUP_MESSAGE="CI detected! Using the CI-provided python."
 
 ${PYTHON_INSTALL}:
 	python --version
-	touch ${PYTHON_INSTALL}
 else
 PYENV_ENV=PYENV_ROOT=$(shell pwd)/.pyenv PYENV_VERSION=${PYTHON_VERSION}
 PYENV=${PYENV_ENV} pyenv exec
