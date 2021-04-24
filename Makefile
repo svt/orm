@@ -22,23 +22,24 @@ PYPI_PACKAGE_NAME = origin-routing-machine
 
 ifdef CI
 PYENV=
+PYTHON_SETUP_MESSAGE="CI detected! Using the CI-provided python."
 
-.pyenv: requirements.txt
-	@echo "CI detected! Using the CI-provided python."
+${PYTHON_INSTALL}:
 	python --version
-	make env-install
+	touch ${PYTHON_INSTALL}
 else
 PYENV_ENV=PYENV_ROOT=$(shell pwd)/.pyenv PYENV_VERSION=${PYTHON_VERSION}
 PYENV=${PYENV_ENV} pyenv exec
+PYTHON_SETUP_MESSAGE="This is a local build! Using pyenv for python."
 
 ${PYTHON_INSTALL}:
 	${PYENV_ENV} pyenv install ${PYTHON_VERSION}
+	${PYENV} python --version
+endif
 
 .pyenv: ${PYTHON_INSTALL} build_requirements.txt requirements.txt
-	@echo "This is a local build! Using pyenv for python"
-	${PYENV} python --version
+	@echo ${PYTHON_SETUP_MESSAGE}
 	make env-install
-endif
 
 pyenv-exec:
 	${PYENV} ${PYENV_ARGS}
