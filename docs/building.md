@@ -5,8 +5,7 @@
 To build ORM and run the included unit tests the following dependencies are needed:
 
 - make
-- python (only tested with python3)
-- virtualenv
+- pyenv
 
 ### Optional components
 
