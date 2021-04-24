@@ -30,3 +30,6 @@ build: clean env
 		version="${ORM_TAG}"
 	mkdir dist
 	lxc image export orm dist/orm-image
+
+orm-ip:
+	@lxc list orm -c 4 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"
