@@ -1,5 +1,7 @@
 # ORM: Origin Routing Machine
 
+NOTE: ORM IS NO LONGER MAINTAINED ACTIVELY BY SVT. SO, ISSUES, PULL REQUESTS ETC WILL MOST LIKELY NOT BE HANDLED. THANKS TO ALL INVOLVED DURING IT'S LIFECYCLE.
+
 ## What it is
 
 ORM is a reverse proxy configuration generator. It generates configuration for HAProxy and Varnish to perform HTTP routing and rewriting, backed by a user friendly YAML config format called ORM rules with built-in collision detection.
