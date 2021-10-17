@@ -3,13 +3,16 @@
 	push-python3-docker push-pypy-docker push-latest-docker \
 	deployment-test release-test
 
+PYTHON_VERSION=3.7.1
+PYTHON_INSTALL=.pyenv/versions/${PYTHON_VERSION}
+
+PIP_VERSION=21.0.1
+
 TESTFILES := $(wildcard test/test_*.py)
 TESTS := $(subst test/,,$(subst .py,,${TESTFILES}))
 
 CODEFILES := $(wildcard orm/*.py *.py)
 LINTFILES := $(patsubst %.py,lint_%,${CODEFILES})
-
-ACTIVATE_VENV := @. env/bin/activate &&
 
 ORM_TAG := $(shell git describe --tags)
 
@@ -18,81 +21,87 @@ DOCKER_IMAGE_BASE_NAME ?= svtwebcoreinfra/orm
 PYPI_PACKAGE_NAME = origin-routing-machine
 
 ifdef CI
-ENV_PREP_COMMAND = true
-env: requirements.txt
-	@echo "CI detected!"
-	make env-install
+PYENV=
+PYTHON_SETUP_MESSAGE="CI detected! Using the CI-provided python."
+
+${PYTHON_INSTALL}:
+	python --version
 else
-ENV_PREP_COMMAND = . env/bin/activate
-PYTHON ?= python3
-env: requirements.txt
-	@echo "This is a local build, I will use virtualenv"
-	virtualenv -p ${PYTHON} env
-	. env/bin/activate && make env-install
+PYENV_ENV=PYENV_ROOT=$(shell pwd)/.pyenv PYENV_VERSION=${PYTHON_VERSION}
+PYENV=${PYENV_ENV} pyenv exec
+PYTHON_SETUP_MESSAGE="This is a local build! Using pyenv for python."
+
+${PYTHON_INSTALL}:
+	${PYENV_ENV} pyenv install ${PYTHON_VERSION}
+	${PYENV} python --version
 endif
 
-env-install: requirements.txt
-	python --version && pip --version
-	pip install -r build_requirements.txt
-	pip-sync build_requirements.txt requirements.txt
-	touch env
+.pyenv: ${PYTHON_INSTALL} build_requirements.txt requirements.txt
+	@echo ${PYTHON_SETUP_MESSAGE}
+	make env-install
+
+pyenv-exec:
+	${PYENV} ${PYENV_ARGS}
+
+env-install: ${PYTHON_INSTALL} build_requirements.txt requirements.txt
+	${PYENV} pip install pip==${PIP_VERSION}
+	${PYENV} python --version
+	${PYENV} pip --version
+	${PYENV} pip install -r build_requirements.txt
+	${PYENV} pip-sync build_requirements.txt requirements.txt
+	touch .pyenv
 
 ifndef CI
 update-deps:
-	virtualenv -p ${PYTHON} update_deps
-	@. update_deps/bin/activate && \
-		export CUSTOM_COMPILE_COMMAND="make $@" && \
-		pip install 'pip-tools>=2.0,<3' && \
-			pip-compile --upgrade --output-file requirements.txt setup.py && \
-			pip-compile --upgrade --output-file build_requirements.txt build_requirements.in
-	rm -rf update_deps
+	make env-install
+	export CUSTOM_COMPILE_COMMAND="make $@" && \
+		${PYENV} pip-compile --upgrade --output-file requirements.txt setup.py && \
+		${PYENV} pip-compile --upgrade --output-file build_requirements.txt build_requirements.in
+	make env-install
 endif
 
-list-outdated-deps: env
-	$(ENV_PREP_COMMAND) && \
-		pip list --outdated
+list-outdated-deps: .pyenv
+	$(PYENV) pip list --outdated
 
-lint: env
-	$(ENV_PREP_COMMAND) && \
-		echo 'lint code' && pylint ${CODEFILES} && \
-		echo 'lint tests' && pylint --disable=similarities ${TESTFILES}
+lint: .pyenv
+	echo 'lint code'
+	${PYENV} pylint ${CODEFILES}
+	echo 'lint tests'
+	${PYENV} pylint --disable=similarities ${TESTFILES}
 
 formatting:
-	$(ENV_PREP_COMMAND) && pip install black
+	${PYENV} pip install black
 	@echo 'check formatting'
-	black --check orm || (echo "Run 'make black' to run the formatter"; exit 1)
+	${PYENV} black --check orm || (echo "Run 'make black' to run the formatter"; exit 1)
 
 black:
-	$(ENV_PREP_COMMAND) && pip install black
-	$(ENV_PREP_COMMAND) && black orm
+	${PYENV} pip install black
+	${PYENV} black orm
 
 ${LINTFILES}:
-	$(ENV_PREP_COMMAND) && \
-		pylint $(subst lint_,,$@).py
+	${PYENV} pylint $(subst lint_,,$@).py
 
-test: env ${TESTS}
+test: .pyenv ${TESTS}
 
 ${TESTS}:
 	@echo "Test: $@"
-	$(ENV_PREP_COMMAND) && \
-		PYTHONPATH=. python test/$@.py
+	PYTHONPATH=. ${PYENV} python test/$@.py
 
-dist: clean-dist env
-	$(ENV_PREP_COMMAND) && \
-		ORM_TAG=${ORM_TAG} python setup.py sdist
+dist: clean-dist .pyenv
+	ORM_TAG=${ORM_TAG} ${PYENV} python setup.py sdist
 
 clean-deployment-test:
 	rm -f orm-rules-tests/globals-test/cache.pkl
 	rm -f orm-rules-tests/rules-test/cache.pkl
+	rm -rf out
 
 clean-dist:
-	rm -rf dist *.egg-info
+	rm -rf dist *.egg-info orm/__pycache__
 
-clean: clean-dist clean-deployment-test
-	rm -rf env
-	rm -rf out
-	rm -rf orm/__pycache__
-	@echo "all clean. here we go."
+clean-pyenv:
+	rm -rf .pyenv
+
+clean: clean-dist clean-deployment-test clean-pyenv
 
 build-docker: build-python3-docker build-pypy-docker
 
@@ -156,45 +165,49 @@ start-orm-deployment: lxd/dist/orm-image.tar.gz
 	lxc info orm >/dev/null 2>&1 || lxc launch orm orm
 	(lxc info orm | grep -q 'Status: Running') || lxc start orm
 
-deployment-test: env dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
-	$(ENV_PREP_COMMAND) && \
-		pip install dist/${PYPI_PACKAGE_NAME}-${ORM_TAG}.tar.gz
+deployment-test: .pyenv dist/orm-${ORM_TAG}.tar.gz start-orm-deployment
+	${PYENV} pip install dist/${PYPI_PACKAGE_NAME}-${ORM_TAG}.tar.gz
 	@echo "Linting deployment test rules"
-	$(ENV_PREP_COMMAND) && \
-		yamllint -c orm-rules-tests/.yamllint orm-rules-tests/
+	${PYENV} yamllint -c orm-rules-tests/.yamllint orm-rules-tests/
 	@echo "Testing rules without globals actions"
 	mkdir -p out/rules-test
 	orm-rules-tests/start_echo_servers.sh
-	$(ENV_PREP_COMMAND) && \
-    orm \
+	${PYENV} orm \
 			-r 'orm-rules-tests/rules-test/rules/**/*.yml' \
 			-G 'orm-rules-tests/rules-test/globals.yml' \
 			--cache-path 'orm-rules-tests/rules-test/cache.pkl' \
 			-o out/rules-test
 	lxd/update-orm-config.sh out/rules-test
 	orm-rules-tests/wait_for_orm.sh
-	$(ENV_PREP_COMMAND) && \
-		lxd/test-orm-config.sh 'orm-rules-tests/rules-test/rules/**/*.yml' && \
-		lxc file push orm-rules-tests/test-maxconn-maxqueue-haproxy-output.sh orm/root/ && \
-		lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
+	${PYENV} orm \
+		--test-target "$(shell make -s -C lxd orm-ip)" \
+		--test-target-insecure \
+		--orm-rules-path 'orm-rules-tests/rules-test/rules/**/*.yml' \
+		--no-check
+	lxc file push orm-rules-tests/test-maxconn-maxqueue-haproxy-output.sh orm/root/
+	lxc exec orm /root/test-maxconn-maxqueue-haproxy-output.sh
 
 	@echo "Testing rules with globals actions"
 	mkdir -p out/globals-test
 	orm-rules-tests/start_echo_servers.sh
-	$(ENV_PREP_COMMAND) && \
-		orm \
+	${PYENV} orm \
 			-r 'orm-rules-tests/globals-test/rules/**/*.yml' \
 			-G 'orm-rules-tests/globals-test/globals.yml' \
 			--cache-path 'orm-rules-tests/globals-test/cache.pkl' \
 			-o out/globals-test
 	lxd/update-orm-config.sh out/globals-test
 	orm-rules-tests/wait_for_orm.sh
-	$(ENV_PREP_COMMAND) && \
-		lxd/test-orm-config.sh 'orm-rules-tests/globals-test/rules/**/*.yml'
+	${PYENV} orm \
+		--test-target "$(shell make -s -C lxd orm-ip)" \
+		--test-target-insecure \
+		--orm-rules-path 'orm-rules-tests/globals-test/rules/**/*.yml' \
+		--no-check
 
 release-test:
-	make clean
+	make clean-dist
+	make env-install
 	make lint
 	make black
 	make test
+	make clean-deployment-test
 	make deployment-test
